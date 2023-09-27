@@ -1,0 +1,24 @@
+#pragma once
+
+#include <string>
+#include <vector>
+#include <fstream>
+
+class ArgumentProcessor
+{
+    private:
+        std::string interface;
+        std::vector<std::string> ipPrefixes;
+        std::ifstream inputFile;
+        std::ofstream logFile;
+
+        int32_t openLogFile();
+        void printHelp();
+        bool isValidByte(std::string& token);
+        bool isValidMask(std::string& token);
+        bool isIpAddress(std::string& ipAddr);
+        
+    public:  
+        int32_t processArguments(int argc, char** argv);
+        void printMembers();
+};
