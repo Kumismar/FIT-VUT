@@ -1,16 +1,30 @@
 #include <iostream>
 
 #include "headers/argument_processor.hpp"
+#include "headers/errors.h"
 
 int main(int argc, char** argv)
 {
     ArgumentProcessor* ap = new ArgumentProcessor();
-    if (ap->processArguments(argc, argv) == -1)
+    int32_t retCode = ap->processArguments(argc, argv);
+
+    if (retCode == SYSTEM_ERR)
     {
-        std::cerr << "neco je spatne sefe" << std::endl;
+        ap->closeFiles();
         delete ap;
-        return 1;
+        return EXIT_FAILURE;
     }
+    else if (retCode == INVALID_CMDL_OPTIONS)
+    {
+        std::cerr << "Wrong command-line options." << std::endl;
+        ap->printHelp();
+        ap->closeFiles();
+        delete ap;
+        return EXIT_FAILURE;
+    }
+    
     ap->printMembers();
-    return 0;
+    ap->closeFiles();
+    delete ap;
+    return EXIT_SUCCESS;
 }

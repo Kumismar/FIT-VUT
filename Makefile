@@ -11,7 +11,7 @@ SRC = $(wildcard $(SRCDIR)/*.cpp)
 OBJ = $(patsubst $(SRCDIR)/%.cpp, $(BUILD)/%.o, $(SRC))
 
 CC := g++
-CFLAGS := -std=c++20 -Wall -Wextra -O3 
+CFLAGS := -std=c++20 -Wall -Wextra 
 
 .PHONY: all run docs clean
 
@@ -32,7 +32,7 @@ test:
 	@cd tests && [ -d build/ ] || mkdir build/ && cd build/ && cmake .. && make -s
 
 runtest: 
-	./$(TESTDIR)/build/testos
+	./$(TESTDIR)/build/testing
 
 docs:
 	doxygen Doxyfile

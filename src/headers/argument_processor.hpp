@@ -13,12 +13,10 @@ class ArgumentProcessor
         std::ofstream logFile;
 
         int32_t openLogFile();
-        void printHelp();
-        bool isValidByte(std::string& token);
-        bool isValidMask(std::string& token);
-        bool isIpAddress(std::string& ipAddr);
         
     public:  
         int32_t processArguments(int argc, char** argv);
+        void printHelp();
         void printMembers();
+        void closeFiles();
 };
