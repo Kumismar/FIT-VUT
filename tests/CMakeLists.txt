@@ -18,18 +18,22 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(googletest)
 
 file(GLOB OBJS
-    ${PROJECTDIR}/build/*.o
+    ${PROJECTDIR}/build/CMakeFiles/dhcp-stats.dir/src/*.o
 )
 
 list(FILTER OBJS 
-    EXCLUDE REGEX ${PROJECTDIR}/build/dhcp-stats.o
+    EXCLUDE REGEX ${PROJECTDIR}/build/CMakeFiles/dhcp-stats.dir/src/dhcp-stats.cpp.o
 )
 
 enable_testing()
 
+file(GLOB TEST_SRC 
+    *.cpp
+)
+
 add_executable(
     testing
-    ip_addr_parsing_tests.cpp
+    ${TEST_SRC}
 )
 
 target_link_libraries(
