@@ -17,9 +17,12 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(googletest)
 
-set(OBJS
-    ${PROJECTDIR}/build/argument_processor.o
-    ${PROJECTDIR}/build/ip_address_parser.o
+file(GLOB OBJS
+    ${PROJECTDIR}/build/*.o
+)
+
+list(FILTER OBJS 
+    EXCLUDE REGEX ${PROJECTDIR}/build/dhcp-stats.o
 )
 
 enable_testing()
