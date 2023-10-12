@@ -15,6 +15,7 @@ class ArgumentProcessor
         int32_t openLogFile();
         
     public:  
+        std::string getInterface();
         int32_t processArguments(int argc, char** argv);
         void printHelp();
         void printMembers();

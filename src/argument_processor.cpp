@@ -102,3 +102,8 @@ void ArgumentProcessor::closeFiles()
         std::cerr << "Failed to close file:" << e.what() << std::endl;
     }   
 }
+
+std::string ArgumentProcessor::getInterface()
+{
+    return interface;
+}
