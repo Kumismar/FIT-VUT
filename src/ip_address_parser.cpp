@@ -5,6 +5,13 @@
 #include "headers/ip_address_parser.hpp"
 #include "headers/errors.h"
 
+#define STRING_START 0
+#define CORRECT_IP_ADDR_BYTE_COUNT 4
+#define MAX_MASK_NUMBER 32
+#define MIN_MASK_NUMBER 1
+#define MIN_BYTE_VALUE 0
+#define MAX_BYTE_VALUE 255
+
 int32_t IpAddressParser::isIpAddress(std::string& ipAddr)
 {
     std::string tmpIpAddr = ipAddr;
@@ -15,27 +22,29 @@ int32_t IpAddressParser::isIpAddress(std::string& ipAddr)
     // Takes 3 bytes of IP address, leaves the last byte and mask
     while ((position = tmpIpAddr.find('.')) != std::string::npos)
     {
-        token = tmpIpAddr.substr(0, position);
+        token = tmpIpAddr.substr(STRING_START, position);
         int32_t retCode = this->isValidByte(token);
         if (retCode != SUCCESS)
         {
             return retCode;
         }
-        tmpIpAddr.erase(0, position + 1);
+        uint8_t charsToRemove = position + 1;
+        tmpIpAddr.erase(STRING_START, charsToRemove);
         byteCount++;
     }
     
     // Last byte and mask handling
     if ((position = tmpIpAddr.find('/')) != std::string::npos)
     {
-        token = tmpIpAddr.substr(0, position);
+        token = tmpIpAddr.substr(STRING_START, position);
         int32_t retCode = this->isValidByte(token);
         if (retCode != SUCCESS)
         {
             return retCode;
         }
         byteCount++;
-        tmpIpAddr.erase(0, position + 1);
+        uint8_t charsToRemove = position + 1;
+        tmpIpAddr.erase(STRING_START, charsToRemove);
         retCode = this->isValidMask(tmpIpAddr);
         if (retCode != SUCCESS)
         {
@@ -46,7 +55,7 @@ int32_t IpAddressParser::isIpAddress(std::string& ipAddr)
     {
         return FAIL;
     }
-    return (byteCount == 4) ? SUCCESS : FAIL;
+    return (byteCount == CORRECT_IP_ADDR_BYTE_COUNT) ? SUCCESS : FAIL;
 }
 
 int32_t IpAddressParser::isValidByte(std::string& token)
@@ -71,7 +80,7 @@ int32_t IpAddressParser::isValidByte(std::string& token)
         }
     }
     
-    return (byte >= 0 && byte <= UINT8_MAX) ? SUCCESS : FAIL;
+    return (byte >= MIN_BYTE_VALUE && byte <= MAX_BYTE_VALUE) ? SUCCESS : FAIL;
 }
 
 int32_t IpAddressParser::isValidMask(std::string& token)
@@ -96,5 +105,5 @@ int32_t IpAddressParser::isValidMask(std::string& token)
         }
     }
 
-    return (maskNum > 0 && maskNum <= 32) ? SUCCESS : FAIL;
+    return (maskNum >= MIN_MASK_NUMBER && maskNum <= MAX_MASK_NUMBER) ? SUCCESS : FAIL;
 }

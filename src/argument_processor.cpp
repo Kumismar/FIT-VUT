@@ -7,6 +7,8 @@
 #include "headers/ip_address_parser.hpp"
 #include "headers/errors.h"
 
+#define MIN_ARGUMENTS 6
+
 int32_t ArgumentProcessor::openLogFile()
 {
     try 
@@ -18,7 +20,7 @@ int32_t ArgumentProcessor::openLogFile()
         std::cerr << "Failed to open log file: " << e.what() << std::endl;
         return SYSTEM_ERR;
     }
-    return 0;
+    return SUCCESS;
 }
 
 void ArgumentProcessor::printHelp()
@@ -32,10 +34,10 @@ void ArgumentProcessor::printHelp()
 
 int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
 {
-    if (argc < 6)
+    if (argc < MIN_ARGUMENTS)
     {
         this->printHelp();
-        return -1;
+        return INVALID_CMDL_OPTIONS;
     }
 
     int32_t opt;
@@ -77,7 +79,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         }
     }
     delete parser;
-    return 0;
+    return SUCCESS;
 }
 
 void ArgumentProcessor::printMembers()
