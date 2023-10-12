@@ -33,3 +33,6 @@
 
 dhcp-stats
 build/
+valgrind.txt
+args.txt
+juju
