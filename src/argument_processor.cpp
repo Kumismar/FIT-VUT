@@ -75,6 +75,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         }
         else 
         {
+            delete parser;
             return -1;
         }
     }
