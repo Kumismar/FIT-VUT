@@ -42,6 +42,10 @@ int32_t IpAddressParser::isIpAddress(std::string& ipAddr)
             return retCode;
         }
     }
+    else
+    {
+        return FAIL;
+    }
     return (byteCount == 4) ? SUCCESS : FAIL;
 }
 
@@ -81,6 +85,7 @@ int32_t IpAddressParser::isValidMask(std::string& token)
     }
     catch (const std::ios_base::failure& e)
     {
+        // Internal stringstream error
         if (mask.bad())
         {
             return SYSTEM_ERR;
@@ -91,5 +96,5 @@ int32_t IpAddressParser::isValidMask(std::string& token)
         }
     }
 
-    return (maskNum >= 0 && maskNum <= 32) ? SUCCESS : FAIL;
+    return (maskNum > 0 && maskNum <= 32) ? SUCCESS : FAIL;
 }
