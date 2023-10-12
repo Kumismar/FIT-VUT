@@ -11,7 +11,7 @@ TEST(IpAddressParsing, ValidIpAddresses)
     EXPECT_EQ(parser.isIpAddress(ipAddr), SUCCESS);
     ipAddr = "0.0.0.0/32";
     EXPECT_EQ(parser.isIpAddress(ipAddr), SUCCESS);
-    ipAddr = "1.2.3.4/0";
+    ipAddr = "1.2.3.4/1";
     EXPECT_EQ(parser.isIpAddress(ipAddr), SUCCESS);
     ipAddr = "192.0.1.12/12";
     EXPECT_EQ(parser.isIpAddress(ipAddr), SUCCESS);
@@ -36,22 +36,48 @@ TEST(IpAddressParsing, BadSeparators)
     EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
     ipAddr = "111.111.111.111=24";
     EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "111.111.111.111.24";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
 }
 
-TEST(IpAddressParsing, BadSeparator)
+TEST(IpAddressParsing, BytesNotDivided)
 {
-    
+    IpAddressParser parser;
+    std::string ipAddr = "123234.123.123/22";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "111.111111.111/24";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "0.00.0/24";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "1010.111.123/24";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
 }
 
-// TEST(IpAddressParsing, BadSeparator)
-// {
-    
-// }
+TEST(IpAddressParsing, MaskNotDivided)
+{
+    IpAddressParser parser;
+    std::string ipAddr = "123.234.123.12322";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "255.255.123.2551";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "111.233.64.255";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);    
+    ipAddr = "63.234.2.51";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+}
 
-// TEST(IpAddressParsing, BadSeparator)
-// {
-    
-// }
+TEST(IpAddressParsing, InvalidMaskNumbers)
+{
+    IpAddressParser parser;
+    std::string ipAddr = "123.234.123.123/33";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "255.255.123.255/0";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "255.255.123.255/234";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+    ipAddr = "255.255.123.255/-800";
+    EXPECT_EQ(parser.isIpAddress(ipAddr), FAIL);
+}
 
 
 // TEST(IpAddressParsing, BadSeparator)
