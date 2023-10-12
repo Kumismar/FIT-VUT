@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "headers/argument_processor.hpp"
+#include "headers/packet_sniffer.hpp"
 #include "headers/errors.h"
 
 int main(int argc, char** argv)
@@ -23,8 +24,19 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     
-    ap->printMembers();
+    PacketSniffer* ps = new PacketSniffer(ap->getInterface().data());
+    retCode = ps->sniffPackets();
+
+    if (retCode == FAIL) 
+    {
+        ap->closeFiles();
+        delete ap;
+        delete ps;
+        return EXIT_FAILURE;
+    }
+  
     ap->closeFiles();
     delete ap;
+    delete ps;
     return EXIT_SUCCESS;
 }
