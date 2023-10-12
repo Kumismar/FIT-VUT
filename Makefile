@@ -3,26 +3,12 @@ CMDL_ARGS := -r juju -i jojo 172.181.11.0/1
 
 BUILD := build
 TESTDIR := tests
-SRCDIR := src
-
-VPATH = $(SRCDIR)
-
-SRC = $(wildcard $(SRCDIR)/*.cpp)
-OBJ = $(patsubst $(SRCDIR)/%.cpp, $(BUILD)/%.o, $(SRC))
-
-CC := g++
-CFLAGS := -std=c++20 -Wall -Wextra 
 
 .PHONY: all run docs clean
 
-all: $(EXECUTABLE)
-
-$(EXECUTABLE): $(OBJ)
-	$(CC) $(CFLAGS) $^ -o $@
-
-$(BUILD)/%.o: %.cpp
-	@[ -d $(BUILD) ] || mkdir $(BUILD)
-	$(CC) $(CFLAGS) -c -g $^ -o $@
+all: 
+	@[ -d build ] || mkdir build
+	@cd build && cmake .. && make
 
 run:
 	@[ -f $(EXECUTABLE) ] || echo "The program executable doesn't exist. You can create it by running 'make'.\n"
