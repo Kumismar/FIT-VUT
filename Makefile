@@ -1,5 +1,7 @@
+include args.txt 
+
 EXECUTABLE := dhcp-stats
-CMDL_ARGS := -r juju -i jojo 172.181.11.0/1
+CMDL_ARGS := $(ARGS)
 
 BUILD := build
 TESTDIR := tests
@@ -24,4 +26,7 @@ docs:
 	doxygen Doxyfile
 
 clean:
-	@rm -rvf $(BUILD) $(EXECUTABLE) $(TESTDIR)/build
+	@rm -rvf $(BUILD) $(EXECUTABLE) $(TESTDIR)/build valgrind.txt juju
+
+valgrind: 
+	valgrind --leak-check=full --log-file=valgrind.txt ./$(EXECUTABLE) $(CMDL_ARGS)
