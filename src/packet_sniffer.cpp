@@ -9,16 +9,44 @@ PacketSniffer::PacketSniffer(char* dev)
 {
     interface = new char[std::strlen(dev) + 1];
     std::strcpy(interface, dev);
+    filter = new char[std::strlen("udp port 67 or udp port 68") + 1];
+    std::strcpy(filter, "udp port 67 or udp port 68");
 }
 
 PacketSniffer::~PacketSniffer()
 {
     delete[] interface;
+    delete[] filter;
+}
+
+int32_t PacketSniffer::processPacket()
+{   
+    struct in_addr clientNewAddress;
+    char clientNewAddressStr[INET_ADDRSTRLEN];
+    uint32_t i = 0;
+    while (true)
+    {
+        packetData = pcap_next(handle, &packetHeader);
+
+        if (packetHeader.caplen < DHCP_TYPE_LOCATION) 
+        {
+            // Pozdeji by chtelo vyresit nejaky error handling, tady tenhle pripad by asi nemel nastat
+            continue;
+        }
+
+        if (packetData[MESSAGE_TYPE_LOCATION] == DHCP && packetData[DHCP_TYPE_LOCATION] == ACK)
+        {
+            memcpy(&clientNewAddress, packetData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
+            inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
+            std::cout << "DHCP packet " << ++i << ": " << "New client IP address: " << clientNewAddressStr << std::endl;
+        }   
+    }
+    return SUCCESS;
 }
 
 int32_t PacketSniffer::sniffPackets()
 {
-    if ((handle = pcap_open_live(interface, BUFSIZ, 1, 1000, pcapErrBuff)) == nullptr)
+    if ((handle = pcap_open_live(interface, BUFSIZ, PROMISC, TIMEOUT_MS, pcapErrBuff)) == nullptr)
     {
         std::cerr << "Can't listen on interface: " << interface << ", additional info: " << pcapErrBuff << std::endl;
         return FAIL;
@@ -36,12 +64,10 @@ int32_t PacketSniffer::sniffPackets()
         return FAIL;
     }
 
-    for (int i = 0; i < 100; i++)
-    {
-        packetData = pcap_next(handle, &packetHeader);
-        std::cout << "Delka paketu " << i << ": " << packetHeader.len << "\nData paketu: " << packetData << std::endl;
-    }
+    this->processPacket();
 
     pcap_close(handle);
     return SUCCESS;
 }
+
+
