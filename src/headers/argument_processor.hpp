@@ -12,7 +12,7 @@ class ArgumentProcessor
         std::ifstream inputFile;
         std::ofstream logFile;
 
-        int32_t openLogFile();
+        int32_t openPcapFile();
         
     public:  
         std::string getInterface();

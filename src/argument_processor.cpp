@@ -9,11 +9,11 @@
 
 #define MIN_ARGUMENTS 6
 
-int32_t ArgumentProcessor::openLogFile()
+int32_t ArgumentProcessor::openPcapFile()
 {
     try 
     {
-        logFile.open(optarg);
+        inputFile.open(optarg);
     }
     catch (const std::ios_base::failure& e)
     {
@@ -47,7 +47,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         {
             case 'r':
             {
-                if (this->openLogFile() == SYSTEM_ERR)
+                if (this->openPcapFile() == SYSTEM_ERR)
                 {
                     return SYSTEM_ERR;
                 }
