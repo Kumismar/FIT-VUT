@@ -2,12 +2,21 @@
 #include <unistd.h>
 #include <sstream>
 #include <cstdint>
+#include <cstring>
 
 #include "headers/argument_processor.hpp"
 #include "headers/ip_address_parser.hpp"
 #include "headers/errors.h"
 
-#define MIN_ARGUMENTS 6
+#define MIN_ARGUMENTS 4
+
+ArgumentProcessor::~ArgumentProcessor()
+{
+    if (interface != nullptr)
+    {
+        delete[] interface;
+    }
+}
 
 int32_t ArgumentProcessor::openPcapFile()
 {
@@ -55,7 +64,8 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
             }
             case 'i':
             {
-                interface = std::string(optarg);
+                interface = new char[std::strlen(optarg) + 1];
+                std::strcpy(interface, optarg);
                 break;
             }
             default:
@@ -63,6 +73,11 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
                 return INVALID_CMDL_OPTIONS;
             }
         }
+    }
+
+    if (!inputFile.is_open() && interface == nullptr)
+    {
+        return INVALID_CMDL_OPTIONS;
     }
 
     IpAddressParser* parser = new IpAddressParser();
@@ -95,7 +110,6 @@ void ArgumentProcessor::closeFiles()
 {
     try
     {
-        this->logFile.close();
         this->inputFile.close();
     }
     catch (const std::ios_base::failure& e)
@@ -104,7 +118,7 @@ void ArgumentProcessor::closeFiles()
     }   
 }
 
-std::string ArgumentProcessor::getInterface()
+char* ArgumentProcessor::getInterface()
 {
     return interface;
 }

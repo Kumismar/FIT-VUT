@@ -7,19 +7,12 @@
 #include "headers/packet_sniffer.hpp"
 #include "headers/errors.h"
 
-
-PacketSniffer::PacketSniffer(char* dev)
-{
-    interface = new char[std::strlen(dev) + 1];
-    std::strcpy(interface, dev);
-    filter = new char[std::strlen("udp port 67 or udp port 68") + 1];
-    std::strcpy(filter, "udp port 67 or udp port 68");
-}
-
 PacketSniffer::~PacketSniffer()
 {
-    delete[] interface;
-    delete[] filter;
+    if (interface != nullptr) 
+    {
+        delete[] interface;
+    }
 }
 
 int32_t PacketSniffer::processPacket()
@@ -27,7 +20,7 @@ int32_t PacketSniffer::processPacket()
     struct in_addr clientNewAddress;
     char clientNewAddressStr[INET_ADDRSTRLEN];
     uint32_t i = 0;
-    while (true)
+    while (i < 1)
     {
         packetData = pcap_next(handle, &packetHeader);
 
@@ -50,6 +43,15 @@ int32_t PacketSniffer::processPacket()
     }
 
     return SUCCESS;
+}
+
+void PacketSniffer::setInterface(char* dev)
+{
+    if (dev != nullptr)
+    {
+        interface = new char[std::strlen(dev) + 1];
+        std::strcpy(interface, dev);
+    }
 }
 
 int32_t PacketSniffer::sniffPackets()

@@ -24,7 +24,8 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
     
-    PacketSniffer* ps = new PacketSniffer(ap->getInterface().data());
+    PacketSniffer* ps = new PacketSniffer();
+    ps->setInterface(ap->getInterface());
     retCode = ps->sniffPackets();
 
     if (retCode == FAIL) 

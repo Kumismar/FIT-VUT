@@ -16,8 +16,8 @@ class PacketSniffer
 {
     private:
         char pcapErrBuff[PCAP_ERRBUF_SIZE];
-        char* interface;
-        char* filter;
+        char* interface = nullptr;
+        char filter[12] = "udp port 67";
         pcap_t* handle;
         struct bpf_program filterProgram;
         struct pcap_pkthdr packetHeader;
@@ -26,7 +26,7 @@ class PacketSniffer
         int32_t processPacket();
 
     public:
-        PacketSniffer(char* interface);
         ~PacketSniffer();
+        void setInterface(char* dev);
         int32_t sniffPackets();
 };

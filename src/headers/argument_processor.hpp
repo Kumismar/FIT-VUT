@@ -7,15 +7,15 @@
 class ArgumentProcessor
 {
     private:
-        std::string interface;
+        char* interface = nullptr;
         std::vector<std::string> ipPrefixes;
         std::ifstream inputFile;
-        std::ofstream logFile;
 
         int32_t openPcapFile();
         
     public:  
-        std::string getInterface();
+        ~ArgumentProcessor();
+        char* getInterface();
         int32_t processArguments(int argc, char** argv);
         void printHelp();
         void printMembers();
