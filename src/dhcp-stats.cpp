@@ -17,7 +17,6 @@ int main(int argc, char** argv)
     }
     else if (retCode == INVALID_CMDL_OPTIONS)
     {
-        std::cerr << "Wrong command-line options." << std::endl;
         ap->printHelp();
         ap->closeFiles();
         delete ap;

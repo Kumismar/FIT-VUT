@@ -26,8 +26,16 @@ int32_t ArgumentProcessor::openPcapFile()
     }
     catch (const std::ios_base::failure& e)
     {
-        std::cerr << "Failed to open log file: " << e.what() << std::endl;
-        return SYSTEM_ERR;
+        if (inputFile.bad())
+        {
+            std::cerr << "Failed to open input file: " << e.what() << std::endl;
+            return SYSTEM_ERR;
+        }
+        if (inputFile.fail())
+        {
+            std::cerr << "Input file doesn't exist, you haven't got permissions to open it or something similar." << std::endl;
+            return INVALID_CMDL_OPTIONS;
+        }
     }
     return SUCCESS;
 }
@@ -45,7 +53,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
 {
     if (argc < MIN_ARGUMENTS)
     {
-        this->printHelp();
+        std::cerr << "Not enough arguments!" << std::endl;
         return INVALID_CMDL_OPTIONS;
     }
 
@@ -56,9 +64,10 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         {
             case 'r':
             {
-                if (this->openPcapFile() == SYSTEM_ERR)
+                int32_t retCode = this->openPcapFile();
+                if (retCode != SUCCESS)
                 {
-                    return SYSTEM_ERR;
+                    return retCode;
                 }
                 break;
             }
@@ -70,6 +79,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
             }
             default:
             {
+                std::cerr << "Invalid command-line option!" << std::endl;
                 return INVALID_CMDL_OPTIONS;
             }
         }
@@ -77,6 +87,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
 
     if (!inputFile.is_open() && interface == nullptr)
     {
+        std::cerr << "Neither interface to listen on nor offline pcap files were provided." << std::endl;
         return INVALID_CMDL_OPTIONS;
     }
 
