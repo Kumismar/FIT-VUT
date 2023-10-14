@@ -10,6 +10,7 @@
 #define DHCP_TYPE_LOCATION 242
 #define ACK 5
 #define TIMEOUT_MS 10000
+#define BYTES_PER_WORD 4
 
 class PacketSniffer 
 {

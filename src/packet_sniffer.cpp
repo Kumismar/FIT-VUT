@@ -1,5 +1,8 @@
 #include <cstring>
 #include <iostream>
+#include <net/ethernet.h>
+#include <netinet/ip.h>
+#include <netinet/udp.h>
 
 #include "headers/packet_sniffer.hpp"
 #include "headers/errors.h"
@@ -34,13 +37,18 @@ int32_t PacketSniffer::processPacket()
             continue;
         }
 
-        if (packetData[MESSAGE_TYPE_LOCATION] == DHCP && packetData[DHCP_TYPE_LOCATION] == ACK)
+        // Skip ethernet, ip and udp headers before actual DHCP data
+        struct ip* ipHeader = (struct ip*)(packetData + ETHER_HDR_LEN);
+        const uint8_t* dhcpData = packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
+
+        if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
         {
-            memcpy(&clientNewAddress, packetData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
+            memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
             inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
             std::cout << "DHCP packet " << ++i << ": " << "New client IP address: " << clientNewAddressStr << std::endl;
         }   
     }
+
     return SUCCESS;
 }
 
