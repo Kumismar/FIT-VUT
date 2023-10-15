@@ -5,8 +5,10 @@
 class IpAddressParser 
 {
     private:
-        int32_t isValidByte(std::string& token);
-        int32_t isValidMask(std::string& token);
+        std::string token;
+
+        int32_t parseMask();
+        int32_t parseByte();
     public:
-        int32_t isIpAddress(std::string& ipAddr);
+        int32_t parseIPAddress(std::string& ipAddr);
 };
