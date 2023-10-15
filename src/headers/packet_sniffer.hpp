@@ -1,6 +1,8 @@
 #pragma once
 
 #include <pcap.h>
+#include <fstream>
+#include <memory>
 
 #define NO_OPTIMIZATION 0
 #define PROMISC 1
@@ -22,11 +24,13 @@ class PacketSniffer
         struct bpf_program filterProgram;
         struct pcap_pkthdr packetHeader;
         const uint8_t* packetData;
+        std::shared_ptr<std::ifstream> inputFile = nullptr;
 
         int32_t processPacket();
 
     public:
         ~PacketSniffer();
+        void setInputFile(std::shared_ptr<std::ifstream> file);
         void setInterface(char* dev);
         int32_t sniffPackets();
 };

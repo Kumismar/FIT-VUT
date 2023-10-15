@@ -3,6 +3,7 @@
 #include <sstream>
 #include <cstdint>
 #include <cstring>
+#include <memory>
 
 #include "headers/argument_processor.hpp"
 #include "headers/ip_address_parser.hpp"
@@ -22,19 +23,19 @@ int32_t ArgumentProcessor::openPcapFile()
 {
     try 
     {
-        this->inputFile.open(optarg);
+        this->inputFile = std::make_shared<std::ifstream>(optarg);
     }
     catch (const std::ios_base::failure& e)
     {
-        if (this->inputFile.bad())
+        if (this->inputFile != nullptr && this->inputFile->fail())
         {
-            std::cerr << "Failed to open input file: " << e.what() << std::endl;
-            return SYSTEM_ERR;
-        }
-        if (this->inputFile.fail())
-        {
-            std::cerr << "Input file doesn't exist, you haven't got permissions to open it or something similar." << std::endl;
+            std::cerr << e.what() << std::endl;
             return INVALID_CMDL_OPTIONS;
+        }
+        else
+        {
+            std::cerr << e.what() << std::endl;
+            return SYSTEM_ERR;
         }
     }
     return SUCCESS;
@@ -85,7 +86,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         }
     }
 
-    if (!this->inputFile.is_open() && this->interface == nullptr)
+    if (this->inputFile == nullptr && this->interface == nullptr)
     {
         std::cerr << "Neither interface to listen on nor offline pcap files were provided." << std::endl;
         return INVALID_CMDL_OPTIONS;
@@ -122,15 +123,23 @@ void ArgumentProcessor::closeFiles()
 {
     try
     {
-        this->inputFile.close();
+        if (this->inputFile != nullptr) 
+        {
+            this->inputFile->close();
+        }
     }
     catch (const std::ios_base::failure& e)
     {
-        std::cerr << "Failed to close file:" << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
     }   
 }
 
 char* ArgumentProcessor::getInterface()
 {
     return this->interface;
+}
+
+std::shared_ptr<std::ifstream> ArgumentProcessor::getInputFile()
+{
+    return this->inputFile;
 }

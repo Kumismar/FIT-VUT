@@ -9,9 +9,9 @@
 
 PacketSniffer::~PacketSniffer()
 {
-    if (interface != nullptr) 
+    if (this->interface != nullptr) 
     {
-        delete[] interface;
+        delete[] this->interface;
     }
 }
 
@@ -22,17 +22,17 @@ int32_t PacketSniffer::processPacket()
     uint32_t i = 0;
     while (i < 1)
     {
-        packetData = pcap_next(handle, &packetHeader);
+        this->packetData = pcap_next(this->handle, &this->packetHeader);
 
-        if (packetHeader.caplen < DHCP_TYPE_LOCATION) 
+        if (this->packetHeader.caplen < DHCP_TYPE_LOCATION) 
         {
             // Pozdeji by chtelo vyresit nejaky error handling, tady tenhle pripad by asi nemel nastat
             continue;
         }
 
         // Skip ethernet, ip and udp headers before actual DHCP data
-        struct ip* ipHeader = (struct ip*)(packetData + ETHER_HDR_LEN);
-        const uint8_t* dhcpData = packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
+        struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
+        const uint8_t* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
 
         if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
         {
@@ -45,38 +45,43 @@ int32_t PacketSniffer::processPacket()
     return SUCCESS;
 }
 
+void PacketSniffer::setInputFile(std::shared_ptr<std::ifstream> file)
+{
+    this->inputFile = file;
+}
+
 void PacketSniffer::setInterface(char* dev)
 {
     if (dev != nullptr)
     {
-        interface = new char[std::strlen(dev) + 1];
-        std::strcpy(interface, dev);
+        this->interface = new char[std::strlen(dev) + 1];
+        std::strcpy(this->interface, dev);
     }
 }
 
 int32_t PacketSniffer::sniffPackets()
 {
-    if ((handle = pcap_open_live(interface, BUFSIZ, PROMISC, TIMEOUT_MS, pcapErrBuff)) == nullptr)
+    if ((this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, this->pcapErrBuff)) == nullptr)
     {
-        std::cerr << "Can't listen on interface: " << interface << ", additional info: " << pcapErrBuff << std::endl;
+        std::cerr << "Can't listen on interface: " << this->interface << ", additional info: " << this->pcapErrBuff << std::endl;
         return FAIL;
     }
 
-    if (pcap_compile(handle, &filterProgram, filter, NO_OPTIMIZATION, PCAP_NETMASK_UNKNOWN) == PCAP_ERROR)
+    if (pcap_compile(this->handle, &this->filterProgram, this->filter, NO_OPTIMIZATION, PCAP_NETMASK_UNKNOWN) == PCAP_ERROR)
     {
-        std::cerr << "pcap_compile() error:\n" << pcap_geterr(handle) << std::endl;
+        std::cerr << "pcap_compile() error:\n" << pcap_geterr(this->handle) << std::endl;
         return FAIL;
     }
 
-    if (pcap_setfilter(handle, &filterProgram) == PCAP_ERROR)
+    if (pcap_setfilter(this->handle, &this->filterProgram) == PCAP_ERROR)
     {
-        std::cerr << "pcap_setfilter() error:\n" << pcap_geterr(handle) << std::endl;
+        std::cerr << "pcap_setfilter() error:\n" << pcap_geterr(this->handle) << std::endl;
         return FAIL;
     }
 
     this->processPacket();
 
-    pcap_close(handle);
+    pcap_close(this->handle);
     return SUCCESS;
 }
 

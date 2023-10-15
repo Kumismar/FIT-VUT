@@ -25,6 +25,7 @@ int main(int argc, char** argv)
     
     PacketSniffer* ps = new PacketSniffer();
     ps->setInterface(ap->getInterface());
+    ps->setInputFile(ap->getInputFile());
     retCode = ps->sniffPackets();
 
     if (retCode == FAIL) 
