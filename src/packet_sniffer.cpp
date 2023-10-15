@@ -13,6 +13,11 @@ PacketSniffer::~PacketSniffer()
     {
         delete[] this->interface;
     }
+    
+    if (this->inputFileName != nullptr)
+    {
+        delete[] this->inputFileName;
+    }
 }
 
 int32_t PacketSniffer::processPacket()
@@ -45,9 +50,13 @@ int32_t PacketSniffer::processPacket()
     return SUCCESS;
 }
 
-void PacketSniffer::setInputFile(std::shared_ptr<std::ifstream> file)
+void PacketSniffer::setInputFile(char* fileName)
 {
-    this->inputFile = file;
+    if (fileName != nullptr) 
+    {
+        this->inputFileName = new char[std::strlen(fileName) + 1];
+        std::strcpy(this->inputFileName, fileName);
+    }
 }
 
 void PacketSniffer::setInterface(char* dev)
@@ -61,7 +70,16 @@ void PacketSniffer::setInterface(char* dev)
 
 int32_t PacketSniffer::sniffPackets()
 {
-    if ((this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, this->pcapErrBuff)) == nullptr)
+    if (this->interface != nullptr && this->inputFileName == nullptr)
+    {
+        this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, this->pcapErrBuff);
+    }
+    else
+    {
+        this->handle = pcap_open_offline(this->inputFileName, this->pcapErrBuff);
+    }
+
+    if (this->handle == nullptr)
     {
         std::cerr << "Can't listen on interface: " << this->interface << ", additional info: " << this->pcapErrBuff << std::endl;
         return FAIL;
@@ -72,7 +90,6 @@ int32_t PacketSniffer::sniffPackets()
         std::cerr << "pcap_compile() error:\n" << pcap_geterr(this->handle) << std::endl;
         return FAIL;
     }
-
     if (pcap_setfilter(this->handle, &this->filterProgram) == PCAP_ERROR)
     {
         std::cerr << "pcap_setfilter() error:\n" << pcap_geterr(this->handle) << std::endl;

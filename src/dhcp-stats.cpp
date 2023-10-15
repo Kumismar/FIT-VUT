@@ -11,32 +11,28 @@ int main(int argc, char** argv)
 
     if (retCode == SYSTEM_ERR)
     {
-        ap->closeFiles();
         delete ap;
         return EXIT_FAILURE;
     }
     else if (retCode == INVALID_CMDL_OPTIONS)
     {
         ap->printHelp();
-        ap->closeFiles();
         delete ap;
         return EXIT_FAILURE;
     }
     
     PacketSniffer* ps = new PacketSniffer();
     ps->setInterface(ap->getInterface());
-    ps->setInputFile(ap->getInputFile());
+    ps->setInputFile(ap->getFileName());
     retCode = ps->sniffPackets();
 
     if (retCode == FAIL) 
     {
-        ap->closeFiles();
         delete ap;
         delete ps;
         return EXIT_FAILURE;
     }
   
-    ap->closeFiles();
     delete ap;
     delete ps;
     return EXIT_SUCCESS;

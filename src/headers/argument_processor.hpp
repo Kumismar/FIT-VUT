@@ -9,15 +9,15 @@ class ArgumentProcessor
 {
     private:
         char* interface = nullptr;
+        char* inputFileName = nullptr;
         std::vector<std::string> ipPrefixes;
-        std::shared_ptr<std::ifstream> inputFile = nullptr;
 
-        int32_t openPcapFile();
-        
+        void getFileNameFromArg();    
+        void getInterfaceFromArg();    
     public:  
         ~ArgumentProcessor();
         char* getInterface();
-        std::shared_ptr<std::ifstream> getInputFile();
+        char* getFileName();
         int32_t processArguments(int argc, char** argv);
         void printHelp();
         void printMembers();

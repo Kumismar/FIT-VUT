@@ -17,28 +17,23 @@ ArgumentProcessor::~ArgumentProcessor()
     {
         delete[] this->interface;
     }
+
+    if (this->inputFileName != nullptr)
+    {
+        delete[] this->inputFileName;
+    }
 }
 
-int32_t ArgumentProcessor::openPcapFile()
+void ArgumentProcessor::getFileNameFromArg()
 {
-    try 
-    {
-        this->inputFile = std::make_shared<std::ifstream>(optarg);
-    }
-    catch (const std::ios_base::failure& e)
-    {
-        if (this->inputFile != nullptr && this->inputFile->fail())
-        {
-            std::cerr << e.what() << std::endl;
-            return INVALID_CMDL_OPTIONS;
-        }
-        else
-        {
-            std::cerr << e.what() << std::endl;
-            return SYSTEM_ERR;
-        }
-    }
-    return SUCCESS;
+    this->inputFileName = new char[std::strlen(optarg) + 1];
+    std::strcpy(this->inputFileName, optarg);
+}
+
+void ArgumentProcessor::getInterfaceFromArg()
+{
+    this->interface = new char[std::strlen(optarg) + 1];
+    std::strcpy(this->interface, optarg);
 }
 
 void ArgumentProcessor::printHelp()
@@ -58,24 +53,19 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         return INVALID_CMDL_OPTIONS;
     }
 
-    int32_t opt;
+    char opt;
     while ((opt = getopt(argc, argv, "i:r:")) != -1)
     {
         switch (opt)
         {
             case 'r':
             {
-                int32_t retCode = this->openPcapFile();
-                if (retCode != SUCCESS)
-                {
-                    return retCode;
-                }
+                this->getFileNameFromArg();
                 break;
             }
             case 'i':
             {
-                this->interface = new char[std::strlen(optarg) + 1];
-                std::strcpy(this->interface, optarg);
+                this->getInterfaceFromArg();
                 break;
             }
             default:
@@ -86,9 +76,14 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         }
     }
 
-    if (this->inputFile == nullptr && this->interface == nullptr)
+    if (this->inputFileName == nullptr && this->interface == nullptr)
     {
         std::cerr << "Neither interface to listen on nor offline pcap files were provided." << std::endl;
+        return INVALID_CMDL_OPTIONS;
+    }
+    else if (this->inputFileName != nullptr && this->interface != nullptr)
+    {
+        std::cerr << "Both interface to listen from and file to read from were provided." << std::endl;
         return INVALID_CMDL_OPTIONS;
     }
 
@@ -119,27 +114,13 @@ void ArgumentProcessor::printMembers()
     std::cout << std::endl; 
 }
 
-void ArgumentProcessor::closeFiles()
-{
-    try
-    {
-        if (this->inputFile != nullptr) 
-        {
-            this->inputFile->close();
-        }
-    }
-    catch (const std::ios_base::failure& e)
-    {
-        std::cerr << e.what() << std::endl;
-    }   
-}
 
 char* ArgumentProcessor::getInterface()
 {
     return this->interface;
 }
 
-std::shared_ptr<std::ifstream> ArgumentProcessor::getInputFile()
+char* ArgumentProcessor::getFileName()
 {
-    return this->inputFile;
+    return this->inputFileName;
 }
