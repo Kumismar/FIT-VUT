@@ -12,9 +12,9 @@
 
 ArgumentProcessor::~ArgumentProcessor()
 {
-    if (interface != nullptr)
+    if (this->interface != nullptr)
     {
-        delete[] interface;
+        delete[] this->interface;
     }
 }
 
@@ -22,16 +22,16 @@ int32_t ArgumentProcessor::openPcapFile()
 {
     try 
     {
-        inputFile.open(optarg);
+        this->inputFile.open(optarg);
     }
     catch (const std::ios_base::failure& e)
     {
-        if (inputFile.bad())
+        if (this->inputFile.bad())
         {
             std::cerr << "Failed to open input file: " << e.what() << std::endl;
             return SYSTEM_ERR;
         }
-        if (inputFile.fail())
+        if (this->inputFile.fail())
         {
             std::cerr << "Input file doesn't exist, you haven't got permissions to open it or something similar." << std::endl;
             return INVALID_CMDL_OPTIONS;
@@ -73,8 +73,8 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
             }
             case 'i':
             {
-                interface = new char[std::strlen(optarg) + 1];
-                std::strcpy(interface, optarg);
+                this->interface = new char[std::strlen(optarg) + 1];
+                std::strcpy(this->interface, optarg);
                 break;
             }
             default:
@@ -85,7 +85,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         }
     }
 
-    if (!inputFile.is_open() && interface == nullptr)
+    if (!this->inputFile.is_open() && this->interface == nullptr)
     {
         std::cerr << "Neither interface to listen on nor offline pcap files were provided." << std::endl;
         return INVALID_CMDL_OPTIONS;
@@ -95,16 +95,17 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
     for (uint16_t i = optind; i < argc; i++)
     {
         std::string arg = std::string(argv[i]);
-        if (parser->isIpAddress(arg))
+        if (parser->parseIPAddress(arg) == SUCCESS)
         {
-            ipPrefixes.push_back(arg);
+            this->ipPrefixes.push_back(arg);
         }
         else 
         {
             delete parser;
-            return -1;
+            return INVALID_CMDL_OPTIONS;
         }
     }
+
     delete parser;
     return SUCCESS;
 }
@@ -113,7 +114,7 @@ void ArgumentProcessor::printMembers()
 {
     std::cout << this->interface << std::endl;
     for (uint16_t i = 0; i < this->ipPrefixes.size(); i++)
-        std::cout << ipPrefixes[i] << "\t";
+        std::cout << this->ipPrefixes[i] << "\t";
     std::cout << std::endl; 
 }
 
@@ -131,5 +132,5 @@ void ArgumentProcessor::closeFiles()
 
 char* ArgumentProcessor::getInterface()
 {
-    return interface;
+    return this->interface;
 }
