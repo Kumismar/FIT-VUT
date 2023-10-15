@@ -3,17 +3,6 @@
 #include <pcap.h>
 #include <fstream>
 #include <memory>
-
-#define NO_OPTIMIZATION 0
-#define PROMISC 1
-#define CLIENT_IPADDR_POSITION 16
-#define MESSAGE_TYPE_LOCATION 240
-#define DHCP 53
-#define DHCP_TYPE_LOCATION 242
-#define ACK 5
-#define TIMEOUT_MS 10000
-#define BYTES_PER_WORD 4
-
 class PacketSniffer 
 {
     private:
@@ -23,14 +12,15 @@ class PacketSniffer
         char filter[12] = "udp port 67";
         pcap_t* handle;
         struct bpf_program filterProgram;
-        struct pcap_pkthdr packetHeader;
-        const uint8_t* packetData;
+        struct pcap_pkthdr* packetHeader;
+        const u_char* packetData;
 
-        int32_t processPacket();
+        void processPacket();
 
     public:
         ~PacketSniffer();
         void setInputFile(char* fileName);
         void setInterface(char* dev);
-        int32_t sniffPackets();
+        int32_t setUpSniffing();
+        void sniffPackets();
 };

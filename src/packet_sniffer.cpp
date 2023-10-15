@@ -7,6 +7,17 @@
 #include "headers/packet_sniffer.hpp"
 #include "headers/errors.h"
 
+#define NO_OPTIMIZATION 0
+#define PROMISC 1
+#define CLIENT_IPADDR_POSITION 16
+#define MESSAGE_TYPE_LOCATION 240
+#define DHCP 53
+#define DHCP_TYPE_LOCATION 242
+#define ACK 5
+#define TIMEOUT_MS 10000
+#define BYTES_PER_WORD 4
+#define NUM_OF_PACKETS 10
+
 PacketSniffer::~PacketSniffer()
 {
     if (this->interface != nullptr) 
@@ -20,34 +31,34 @@ PacketSniffer::~PacketSniffer()
     }
 }
 
-int32_t PacketSniffer::processPacket()
+void PacketSniffer::sniffPackets()
 {   
-    struct in_addr clientNewAddress;
-    char clientNewAddressStr[INET_ADDRSTRLEN];
-    uint32_t i = 0;
-    while (i < 1)
+    while (true)
     {
-        this->packetData = pcap_next(this->handle, &this->packetHeader);
+        this->packetData = pcap_next(this->handle, this->packetHeader);
 
-        if (this->packetHeader.caplen < DHCP_TYPE_LOCATION) 
+        if (this->packetHeader->caplen < DHCP_TYPE_LOCATION) 
         {
             // Pozdeji by chtelo vyresit nejaky error handling, tady tenhle pripad by asi nemel nastat
             continue;
         }
-
-        // Skip ethernet, ip and udp headers before actual DHCP data
-        struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
-        const uint8_t* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
-
-        if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
-        {
-            memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
-            inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
-            std::cout << "DHCP packet " << ++i << ": " << "New client IP address: " << clientNewAddressStr << std::endl;
-        }   
+        this->processPacket();
     }
+}
 
-    return SUCCESS;
+void PacketSniffer::processPacket()
+{
+    struct in_addr clientNewAddress;
+    char clientNewAddressStr[INET_ADDRSTRLEN];
+    // Skip ethernet, ip and udp headers before actual DHCP data
+    struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
+    const uint8_t* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
+
+    if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
+    {
+        memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
+        inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
+    }   
 }
 
 void PacketSniffer::setInputFile(char* fileName)
@@ -68,7 +79,7 @@ void PacketSniffer::setInterface(char* dev)
     }
 }
 
-int32_t PacketSniffer::sniffPackets()
+int32_t PacketSniffer::setUpSniffing()
 {
     if (this->interface != nullptr && this->inputFileName == nullptr)
     {
@@ -95,10 +106,6 @@ int32_t PacketSniffer::sniffPackets()
         std::cerr << "pcap_setfilter() error:\n" << pcap_geterr(this->handle) << std::endl;
         return FAIL;
     }
-
-    this->processPacket();
-
-    pcap_close(this->handle);
     return SUCCESS;
 }
 

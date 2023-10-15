@@ -24,15 +24,17 @@ int main(int argc, char** argv)
     PacketSniffer* ps = new PacketSniffer();
     ps->setInterface(ap->getInterface());
     ps->setInputFile(ap->getFileName());
-    retCode = ps->sniffPackets();
 
+    retCode = ps->setUpSniffing();
     if (retCode == FAIL) 
     {
         delete ap;
         delete ps;
         return EXIT_FAILURE;
     }
-  
+
+    ps->sniffPackets();
+    
     delete ap;
     delete ps;
     return EXIT_SUCCESS;
