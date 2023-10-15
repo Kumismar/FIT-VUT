@@ -11,40 +11,40 @@
 #define MIN_MASK_NUMBER 1
 #define MIN_BYTE_VALUE 0
 #define MAX_BYTE_VALUE 255
+#define DELIMITER 1
 
-int32_t IpAddressParser::parseIPAddress(std::string& ipAddr)
+int32_t IpAddressParser::parseIPAddress(std::string ipAddr)
 {
-    std::string tmpIpAddr = ipAddr;
     size_t position;
     uint8_t byteCount = 0;
 
     // Takes 3 bytes of IP address, leaves the last byte and mask
-    while ((position = tmpIpAddr.find('.')) != std::string::npos)
+    while ((position = ipAddr.find('.')) != std::string::npos)
     {
-        this->token = tmpIpAddr.substr(STRING_START, position);
+        this->token = ipAddr.substr(STRING_START, position);
         int32_t retCode = this->parseByte();
         if (retCode != SUCCESS)
         {
             return retCode;
         }
-        uint8_t charsToRemove = position + 1;
-        tmpIpAddr.erase(STRING_START, charsToRemove);
+        ipAddr.erase(STRING_START, position + DELIMITER);
         byteCount++;
     }
     
     // Last byte and mask handling
-    if ((position = tmpIpAddr.find('/')) != std::string::npos)
+    if ((position = ipAddr.find('/')) != std::string::npos)
     {
-        this->token = tmpIpAddr.substr(STRING_START, position);
+        this->token = ipAddr.substr(STRING_START, position);
         int32_t retCode = this->parseByte();
         if (retCode != SUCCESS)
         {
             return retCode;
         }
         byteCount++;
-        uint8_t charsToRemove = position + 1;
-        tmpIpAddr.erase(STRING_START, charsToRemove);
-        this->token = tmpIpAddr;
+        ipAddr.erase(STRING_START, position + DELIMITER);
+
+        // Only "/mask" is left in the string
+        this->token = ipAddr;
         retCode = this->parseMask();
         if (retCode != SUCCESS)
         {
@@ -76,7 +76,7 @@ int32_t IpAddressParser::parseByte()
     }
     catch (const std::ios_base::failure& e)
     {
-        // Internal stringstream error
+        // Internal stringstream or operator>> error
         if (addr.bad())
         {
             std::cerr << "Internal operator>> error." << std::endl; 
@@ -108,7 +108,7 @@ int32_t IpAddressParser::parseMask()
     }
     catch (const std::ios_base::failure& e)
     {
-        // Internal stringstream error
+        // Internal stringstream or operator>> error
         if (mask.bad())
         {
             std::cerr << "Internal operator>> error." << std::endl;

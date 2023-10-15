@@ -10,5 +10,5 @@ class IpAddressParser
         int32_t parseMask();
         int32_t parseByte();
     public:
-        int32_t parseIPAddress(std::string& ipAddr);
+        int32_t parseIPAddress(std::string ipAddr);
 };
