@@ -29,6 +29,7 @@ enable_testing()
 
 file(GLOB TEST_SRC 
     *.cpp
+    aux/*.cpp
 )
 
 add_executable(
@@ -39,6 +40,7 @@ add_executable(
 target_link_libraries(
     testing    
     ${OBJS}
+    pcap
     GTest::gtest_main
 )
 
