@@ -87,7 +87,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         return INVALID_CMDL_OPTIONS;
     }
 
-    IpAddressParser* parser = new IpAddressParser();
+    std::unique_ptr<IpAddressParser> parser = std::make_unique<IpAddressParser>();
     for (uint16_t i = optind; i < argc; i++)
     {
         std::string arg = std::string(argv[i]);
@@ -97,12 +97,10 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         }
         else 
         {
-            delete parser;
             return INVALID_CMDL_OPTIONS;
         }
     }
 
-    delete parser;
     return SUCCESS;
 }
 
