@@ -20,15 +20,8 @@
 
 PacketSniffer::~PacketSniffer()
 {
-    if (this->interface != nullptr) 
-    {
-        delete[] this->interface;
-    }
-    
-    if (this->inputFileName != nullptr)
-    {
-        delete[] this->inputFileName;
-    }
+    delete[] this->interface;
+    delete[] this->inputFileName;
 }
 
 void PacketSniffer::sniffPackets()
@@ -52,7 +45,7 @@ void PacketSniffer::processPacket()
     char clientNewAddressStr[INET_ADDRSTRLEN];
     // Skip ethernet, ip and udp headers before actual DHCP data
     struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
-    const uint8_t* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
+    const u_char* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
 
     if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
     {
