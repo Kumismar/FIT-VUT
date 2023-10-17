@@ -1,7 +1,6 @@
 #include <iostream>
 #include <unistd.h>
 #include <sstream>
-#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -13,15 +12,8 @@
 
 ArgumentProcessor::~ArgumentProcessor()
 {
-    if (this->interface != nullptr)
-    {
-        delete[] this->interface;
-    }
-
-    if (this->inputFileName != nullptr)
-    {
-        delete[] this->inputFileName;
-    }
+    delete[] this->interface;
+    delete[] this->inputFileName;
 }
 
 void ArgumentProcessor::getFileNameFromArg()
@@ -53,7 +45,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         return INVALID_CMDL_OPTIONS;
     }
 
-    char opt;
+    int32_t opt;
     while ((opt = getopt(argc, argv, "i:r:")) != -1)
     {
         switch (opt)
@@ -88,7 +80,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
     }
 
     std::unique_ptr<IpAddressParser> parser = std::make_unique<IpAddressParser>();
-    for (uint16_t i = optind; i < argc; i++)
+    for (int32_t i = optind; i < argc; i++)
     {
         std::string arg = std::string(argv[i]);
         if (parser->parseIPAddress(arg) == SUCCESS)
@@ -107,8 +99,8 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
 void ArgumentProcessor::printMembers()
 {
     std::cout << this->interface << std::endl;
-    for (uint16_t i = 0; i < this->ipPrefixes.size(); i++)
-        std::cout << this->ipPrefixes[i] << "\t";
+    for (const std::string & ipPrefix : this->ipPrefixes)
+        std::cout << ipPrefix << "\t";
     std::cout << std::endl; 
 }
 
@@ -121,4 +113,10 @@ char* ArgumentProcessor::getInterface()
 char* ArgumentProcessor::getFileName()
 {
     return this->inputFileName;
+}
+
+std::shared_ptr<std::vector<std::string>> ArgumentProcessor::getIpPrefixes()
+{
+    std::shared_ptr<std::vector<std::string>> addresses = std::make_shared<std::vector<std::string>>(this->ipPrefixes);
+    return addresses;
 }

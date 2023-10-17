@@ -3,7 +3,11 @@
 #include <pcap.h>
 #include <fstream>
 #include <memory>
-class PacketSniffer 
+#include <cstdint>
+#include "argument_processor.hpp"
+#include "ip_address_manager.hpp"
+
+class PacketSniffer
 {
     private:
         char pcapErrBuff[PCAP_ERRBUF_SIZE];
@@ -15,12 +19,12 @@ class PacketSniffer
         struct pcap_pkthdr* packetHeader;
         const u_char* packetData;
 
-        void processPacket();
+        void processPacket(std::shared_ptr<IpAddressManager> manager);
 
     public:
         ~PacketSniffer();
         void setInputFile(char* fileName);
         void setInterface(char* dev);
         int32_t setUpSniffing();
-        void sniffPackets();
+        int32_t sniffPackets(std::shared_ptr<std::vector<std::string>> addresses);
 };

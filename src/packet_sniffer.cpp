@@ -16,43 +16,62 @@
 #define ACK 5
 #define TIMEOUT_MS 10000
 #define BYTES_PER_WORD 4
-#define NUM_OF_PACKETS 10
+#define PACKET_SUCCESSFULLY_READ 1
+#define CAPTURE_TIMEOUT 0
 
 PacketSniffer::~PacketSniffer()
 {
-    if (this->interface != nullptr) 
-    {
-        delete[] this->interface;
-    }
-    
-    if (this->inputFileName != nullptr)
-    {
-        delete[] this->inputFileName;
-    }
+    delete[] this->interface;
+    delete[] this->inputFileName;
 }
 
-void PacketSniffer::sniffPackets()
-{   
+int32_t PacketSniffer::sniffPackets(std::shared_ptr<std::vector<std::string>> addresses)
+{
+    std::shared_ptr<IpAddressManager> manager = std::make_shared<IpAddressManager>();
+    manager->setAddressesAndMasks(addresses);
+    return SUCCESS;
     while (true)
     {
-        this->packetData = pcap_next(this->handle, this->packetHeader);
-
-        if (this->packetHeader->caplen < DHCP_TYPE_LOCATION) 
+        int32_t retCode = pcap_next_ex(this->handle, &this->packetHeader, &this->packetData);
+        if (retCode == PCAP_ERROR_BREAK)
         {
-            // Pozdeji by chtelo vyresit nejaky error handling, tady tenhle pripad by asi nemel nastat
-            continue;
+            std::cerr << "End of file brother" << std::endl;
+            return SUCCESS;
         }
-        this->processPacket();
+        else if (retCode == PCAP_ERROR)
+        {
+            std::cerr << pcap_geterr(this->handle) << std::endl;
+            return FAIL;
+        }
+        else if (retCode == PACKET_SUCCESSFULLY_READ)
+        {
+            if (this->packetHeader->caplen < DHCP_TYPE_LOCATION)
+            {
+                std::cerr << "Can't read DHCP data; packet is too short." << std::endl;
+                return FAIL;
+            }
+            this->processPacket(manager);
+        }
+        else if (retCode == CAPTURE_TIMEOUT)
+        {
+            std::cerr << "Live capture buffer timeout" << std::endl;
+            return FAIL;
+        }
+        else
+        {
+            std::cerr << pcap_geterr(this->handle) << std::endl;
+            return FAIL;
+        }
     }
 }
 
-void PacketSniffer::processPacket()
+void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
 {
     struct in_addr clientNewAddress;
     char clientNewAddressStr[INET_ADDRSTRLEN];
     // Skip ethernet, ip and udp headers before actual DHCP data
     struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
-    const uint8_t* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
+    const u_char* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
 
     if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
     {

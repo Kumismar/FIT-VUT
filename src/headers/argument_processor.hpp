@@ -21,5 +21,5 @@ class ArgumentProcessor
         int32_t processArguments(int argc, char** argv);
         void printHelp();
         void printMembers();
-        void closeFiles();
+        std::shared_ptr<std::vector<std::string>> getIpPrefixes();
 };

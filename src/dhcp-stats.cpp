@@ -7,7 +7,7 @@
 
 int main(int argc, char** argv)
 {
-    std::unique_ptr<ArgumentProcessor> ap = std::make_unique<ArgumentProcessor>();
+    std::shared_ptr<ArgumentProcessor> ap = std::make_shared<ArgumentProcessor>();
     int32_t retCode = ap->processArguments(argc, argv);
 
     if (retCode == SYSTEM_ERR)
@@ -19,7 +19,7 @@ int main(int argc, char** argv)
         ap->printHelp();
         return EXIT_FAILURE;
     }
-    
+
     std::unique_ptr<PacketSniffer> ps = std::make_unique<PacketSniffer>();
     ps->setInterface(ap->getInterface());
     ps->setInputFile(ap->getFileName());
@@ -30,7 +30,11 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    ps->sniffPackets();
-    
+    std::shared_ptr<std::vector<std::string>> ipAddresses = ap->getIpPrefixes();
+    retCode = ps->sniffPackets(ipAddresses);
+    if (retCode == FAIL)
+    {
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
