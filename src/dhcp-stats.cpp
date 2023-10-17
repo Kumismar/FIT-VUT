@@ -6,36 +6,34 @@
 
 int main(int argc, char** argv)
 {
-    ArgumentProcessor* ap = new ArgumentProcessor();
+    std::shared_ptr<ArgumentProcessor> ap = std::make_shared<ArgumentProcessor>();
     int32_t retCode = ap->processArguments(argc, argv);
 
     if (retCode == SYSTEM_ERR)
     {
-        delete ap;
         return EXIT_FAILURE;
     }
     else if (retCode == INVALID_CMDL_OPTIONS)
     {
         ap->printHelp();
-        delete ap;
         return EXIT_FAILURE;
     }
-    
-    PacketSniffer* ps = new PacketSniffer();
+
+    std::unique_ptr<PacketSniffer> ps = std::make_unique<PacketSniffer>();
     ps->setInterface(ap->getInterface());
     ps->setInputFile(ap->getFileName());
 
     retCode = ps->setUpSniffing();
     if (retCode == FAIL) 
     {
-        delete ap;
-        delete ps;
         return EXIT_FAILURE;
     }
 
-    ps->sniffPackets();
-    
-    delete ap;
-    delete ps;
+    std::shared_ptr<std::vector<std::string>> ipAddresses = ap->getIpPrefixes();
+    retCode = ps->sniffPackets(ipAddresses);
+    if (retCode == FAIL)
+    {
+        return EXIT_FAILURE;
+    }
     return EXIT_SUCCESS;
 }
