@@ -36,3 +36,4 @@ build/
 valgrind.txt
 args.txt
 juju
+dhcp-homenetwork.pcap
