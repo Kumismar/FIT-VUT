@@ -1,7 +1,6 @@
 #include <iostream>
 #include <unistd.h>
 #include <sstream>
-#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -114,4 +113,10 @@ char* ArgumentProcessor::getInterface()
 char* ArgumentProcessor::getFileName()
 {
     return this->inputFileName;
+}
+
+std::shared_ptr<std::vector<std::string>> ArgumentProcessor::getIpPrefixes()
+{
+    std::shared_ptr<std::vector<std::string>> addresses = std::make_shared<std::vector<std::string>>(this->ipPrefixes);
+    return addresses;
 }
