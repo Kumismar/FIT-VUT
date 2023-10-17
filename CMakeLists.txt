@@ -9,5 +9,5 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 file(GLOB SOURCE_FILES "src/*.cpp")
 add_executable(dhcp-stats ${SOURCE_FILES})
 
-target_compile_options(dhcp-stats PRIVATE -Wall -Wextra -Werror -g)
+target_compile_options(dhcp-stats PRIVATE -Wall -Wextra -g)
 target_link_libraries(dhcp-stats pcap)
