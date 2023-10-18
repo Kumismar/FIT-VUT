@@ -29,7 +29,6 @@ int32_t PacketSniffer::sniffPackets(std::shared_ptr<std::vector<std::string>> ad
 {
     std::shared_ptr<IpAddressManager> manager = std::make_shared<IpAddressManager>();
     manager->setAddressesAndMasks(addresses);
-    return SUCCESS;
     while (true)
     {
         int32_t retCode = pcap_next_ex(this->handle, &this->packetHeader, &this->packetData);
@@ -77,7 +76,10 @@ void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
     {
         memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
         inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
-    }   
+        manager->processNewAddress(clientNewAddress);
+        std::cout << "Currently processed: " << clientNewAddressStr << std::endl;
+        manager->printMembers();
+    }
 }
 
 void PacketSniffer::setInputFile(char* fileName)
