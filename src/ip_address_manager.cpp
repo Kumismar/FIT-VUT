@@ -52,8 +52,7 @@ void IpAddressManager::printMembers()
     {
         struct in_addr tmp;
         tmp.s_addr = (in_addr_t)networkAddresses[i];
-        struct in_addr tmp2;
-        std::cout << "ip address: " << inet_ntoa(tmp) << "\tmask: " << inet_ntoa(tmp2) << "\tdecimal mask: " << decimalMasks[i]
+        std::cout << "ip address: " << inet_ntoa(tmp) << "\tdecimal mask: " << decimalMasks[i]
                   << "\ttaken addresses: " << numberOfTakenAddresses[i] << "\tfree addresses:" << numberOfFreeAddresses[i] << std::endl;
     }
 }
@@ -83,7 +82,7 @@ bool IpAddressManager::belongsToNetwork(uint32_t clientAddressShifted, uint32_t 
 
 bool IpAddressManager::isTaken(uint32_t clientAddress, size_t index)
 {
-    if (this->takenAddresses.size() < index)
+    if (this->takenAddresses.size() < index || this->takenAddresses.empty())
     {
         std::vector<uint32_t> tmp;
         tmp.push_back(clientAddress);
@@ -91,11 +90,18 @@ bool IpAddressManager::isTaken(uint32_t clientAddress, size_t index)
         return false;
     }
 
+    if (this->takenAddresses[index].empty())
+    {
+        this->takenAddresses[index].push_back(clientAddress);
+        return false;
+    }
+
     for (uint32_t takenAddr : takenAddresses[index])
     {
-        if (clientAddress == takenAddr)
+        if (takenAddr == clientAddress)
             return true;
     }
+
     return false;
 }
 
