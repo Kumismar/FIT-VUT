@@ -117,4 +117,10 @@ int32_t PacketSniffer::setUpSniffing()
     return SUCCESS;
 }
 
+void PacketSniffer::cleanUp()
+{
+    pcap_freecode(&this->filterProgram);
+    pcap_close(this->handle);
+}
+
 

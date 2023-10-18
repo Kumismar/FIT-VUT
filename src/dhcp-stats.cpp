@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv)
 {
-    std::shared_ptr<ArgumentProcessor> ap = std::make_shared<ArgumentProcessor>();
+    std::unique_ptr<ArgumentProcessor> ap = std::make_unique<ArgumentProcessor>();
     int32_t retCode = ap->processArguments(argc, argv);
 
     if (retCode == SYSTEM_ERR)
@@ -34,6 +34,7 @@ int main(int argc, char** argv)
     initscr();
     std::vector<std::string>* ipAddresses = ap->getIpPrefixes();
     retCode = ps->sniffPackets(*ipAddresses);
+    ps->cleanUp();
     if (retCode == FAIL)
     {
         endwin();

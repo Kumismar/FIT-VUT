@@ -29,4 +29,4 @@ clean:
 	@rm -rvf $(BUILD) $(EXECUTABLE) $(TESTDIR)/build valgrind.txt juju
 
 valgrind: 
-	valgrind --leak-check=full --track-origins=yes --log-file=valgrind.txt ./$(EXECUTABLE) $(CMDL_ARGS)
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.txt ./$(EXECUTABLE) $(CMDL_ARGS)

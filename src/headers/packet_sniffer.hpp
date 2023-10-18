@@ -27,4 +27,5 @@ public:
     void setInterface(char* dev);
     int32_t setUpSniffing();
     int32_t sniffPackets(std::vector<std::string>& addresses);
+    void cleanUp();
 };
