@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <ncurses.h>
 
 #include "headers/argument_processor.hpp"
 #include "headers/packet_sniffer.hpp"
@@ -30,11 +31,17 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
+    initscr();
     std::shared_ptr<std::vector<std::string>> ipAddresses = ap->getIpPrefixes();
     retCode = ps->sniffPackets(ipAddresses);
     if (retCode == FAIL)
     {
+        endwin();
         return EXIT_FAILURE;
     }
+    printw("Press any key to exit");
+    refresh();
+    getch();
+    endwin();
     return EXIT_SUCCESS;
 }

@@ -3,6 +3,7 @@
 #include <net/ethernet.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
+#include <ncurses.h>
 
 #include "headers/packet_sniffer.hpp"
 #include "headers/errors.h"
@@ -34,7 +35,6 @@ int32_t PacketSniffer::sniffPackets(std::shared_ptr<std::vector<std::string>> ad
         int32_t retCode = pcap_next_ex(this->handle, &this->packetHeader, &this->packetData);
         if (retCode == PCAP_ERROR_BREAK)
         {
-            std::cerr << "End of file brother" << std::endl;
             return SUCCESS;
         }
         else if (retCode == PCAP_ERROR)
@@ -77,7 +77,6 @@ void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
         memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
         inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
         manager->processNewAddress(clientNewAddress);
-        std::cout << "Currently processed: " << clientNewAddressStr << std::endl;
         manager->printMembers();
     }
 }

@@ -3,15 +3,18 @@
 #include <cstring>
 #include <sstream>
 #include <cmath>
-#include <algorithm>
+#include <ncurses.h>
 
 #include "headers/ip_address_manager.hpp"
 #include "headers/errors.h"
 
 #define MAX_MASK_NUMBER 32
 #define NO_ADDRESSES_TAKEN 0
+#define NO_UTILIZATION 0.0
+#define NETWORK_AND_BROADCAST 2
+#define CONVERT_TO_PERCENT 100
 
-int32_t IpAddressManager::setAddressesAndMasks(const std::shared_ptr<std::vector<std::string>>& addresses)
+int32_t IpAddressManager::setAddressesAndMasks(std::shared_ptr<std::vector<std::string>> addresses)
 {
     for (std::string& ipAddress : *addresses)
     {
@@ -31,6 +34,7 @@ void IpAddressManager::addAddressToArray(std::string& address)
     inet_aton(this->charAddress, &tmpAddr);
     uint32_t binaryIpAddr = (uint32_t)tmpAddr.s_addr;
     this->networkAddresses.push_back(binaryIpAddr);
+    this->networkUtilizations.push_back(NO_UTILIZATION);
 }
 
 void IpAddressManager::addMaskToArray(std::string& mask)
@@ -38,23 +42,30 @@ void IpAddressManager::addMaskToArray(std::string& mask)
     std::stringstream auxMask(mask);
     uint32_t decimalMask;
     auxMask >> decimalMask;
-    uint32_t binaryMask = 0xFFFFFFFF >> (MAX_MASK_NUMBER - decimalMask);
     uint32_t totalAddressesAvailable = std::pow(2, MAX_MASK_NUMBER - decimalMask) - 2;
 
     this->decimalMasks.push_back(decimalMask);
-    this->numberOfFreeAddresses.push_back(totalAddressesAvailable);
     this->numberOfTakenAddresses.push_back(NO_ADDRESSES_TAKEN);
+    this->maxHosts.push_back(totalAddressesAvailable);
 }
 
 void IpAddressManager::printMembers()
 {
-    for (size_t i = 0; i < networkAddresses.size(); i++)
+    clear();
+    printw("%-15s %-12s %-20s %-10s\n", "IP-Prefix", "Max-Hosts", "Allocated addresses", "Utilization");
+    for (size_t i = 0; i < this->networkAddresses.size(); i++)
     {
         struct in_addr tmp;
-        tmp.s_addr = (in_addr_t)networkAddresses[i];
-        std::cout << "ip address: " << inet_ntoa(tmp) << "\tdecimal mask: " << decimalMasks[i]
-                  << "\ttaken addresses: " << numberOfTakenAddresses[i] << "\tfree addresses:" << numberOfFreeAddresses[i] << std::endl;
+        tmp.s_addr = (in_addr_t)(this->networkAddresses[i]);
+        inet_aton(this->charAddress, &tmp);
+        char ipPrefixForPrint[INET_ADDRSTRLEN + 3];
+        std::strcpy(ipPrefixForPrint, this->charAddress);
+        std::strcat(ipPrefixForPrint, ('/' + std::to_string(this->decimalMasks[i])).c_str());
+        printw("%-15s %-12d %-20d %.2f%%\n",
+             ipPrefixForPrint, this->maxHosts[i], this->numberOfTakenAddresses[i], this->networkUtilizations[i]
+        );
     }
+    refresh();
 }
 
 void IpAddressManager::processNewAddress(struct in_addr& addr)
@@ -69,8 +80,10 @@ void IpAddressManager::processNewAddress(struct in_addr& addr)
         if (this->belongsToNetwork(clientAddressShifted, networkAddressShifted) && !this->isTaken(clientAddress, i))
         {
             this->numberOfTakenAddresses[i]++;
-            this->numberOfFreeAddresses[i]--;
             this->takenAddresses[i].push_back(clientAddress);
+            float maxIpAddressesInNetwork = (float)(std::pow(2, MAX_MASK_NUMBER - this->decimalMasks[i]) - NETWORK_AND_BROADCAST);
+            float utilization = (float)(this->numberOfTakenAddresses[i]) / maxIpAddressesInNetwork * CONVERT_TO_PERCENT;
+            this->networkUtilizations[i] = utilization;
         }
     }
 }

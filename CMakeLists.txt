@@ -11,4 +11,4 @@ add_executable(dhcp-stats ${SOURCE_FILES})
 
 target_include_directories(dhcp-stats PRIVATE src/headers)
 target_compile_options(dhcp-stats PRIVATE -Wall -Wextra -g)
-target_link_libraries(dhcp-stats pcap)
+target_link_libraries(dhcp-stats pcap ncurses)
