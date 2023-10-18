@@ -26,5 +26,5 @@ public:
     void setInputFile(char* fileName);
     void setInterface(char* dev);
     int32_t setUpSniffing();
-    int32_t sniffPackets(std::shared_ptr<std::vector<std::string>> addresses);
+    int32_t sniffPackets(std::vector<std::string>& addresses);
 };

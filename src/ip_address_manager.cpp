@@ -8,9 +8,9 @@
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
 
-int32_t IpAddressManager::setAddressesAndMasks(std::shared_ptr<std::vector<std::string>> addresses)
+int32_t IpAddressManager::setAddressesAndMasks(std::vector<std::string>& addresses)
 {
-    for (std::string& ipAddress : *addresses)
+    for (std::string& ipAddress : addresses)
     {
         size_t separatorPosition = ipAddress.find('/');
         std::string address = ipAddress.substr(0, separatorPosition);
@@ -52,7 +52,7 @@ void IpAddressManager::printMembers()
         struct in_addr tmp;
         tmp.s_addr = (in_addr_t)(this->networkAddresses[i]);
         inet_aton(this->charAddress, &tmp);
-        char ipPrefixForPrint[INET_ADDRSTRLEN + 3];
+        char ipPrefixForPrint[INET_ADDRSTRLEN + MASK_LENGTH];
         std::strcpy(ipPrefixForPrint, this->charAddress);
         std::strcat(ipPrefixForPrint, ('/' + std::to_string(this->decimalMasks[i])).c_str());
         printw("%-15s %-12d %-20d %.2f%%\n",

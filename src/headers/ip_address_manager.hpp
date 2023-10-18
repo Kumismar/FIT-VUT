@@ -24,7 +24,7 @@ private:
 
 public:
     void printMembers();
-    int32_t setAddressesAndMasks(std::shared_ptr<std::vector<std::string>> addresses);
+    int32_t setAddressesAndMasks(std::vector<std::string>& addresses);
     void processNewAddress(struct in_addr& addr);
 };
 

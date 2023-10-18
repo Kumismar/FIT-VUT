@@ -113,8 +113,7 @@ char* ArgumentProcessor::getFileName()
     return this->inputFileName;
 }
 
-std::shared_ptr<std::vector<std::string>> ArgumentProcessor::getIpPrefixes()
+std::vector<std::string>* ArgumentProcessor::getIpPrefixes()
 {
-    std::shared_ptr<std::vector<std::string>> addresses = std::make_shared<std::vector<std::string>>(this->ipPrefixes);
-    return addresses;
+    return &this->ipPrefixes;
 }

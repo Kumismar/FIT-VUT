@@ -11,6 +11,7 @@
 #define NO_UTILIZATION 0.0
 #define NETWORK_AND_BROADCAST 2
 #define CONVERT_TO_PERCENT 100
+#define MASK_LENGTH 3
 
 /* ip_address_parser constants */
 

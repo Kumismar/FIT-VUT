@@ -32,8 +32,8 @@ int main(int argc, char** argv)
     }
 
     initscr();
-    std::shared_ptr<std::vector<std::string>> ipAddresses = ap->getIpPrefixes();
-    retCode = ps->sniffPackets(ipAddresses);
+    std::vector<std::string>* ipAddresses = ap->getIpPrefixes();
+    retCode = ps->sniffPackets(*ipAddresses);
     if (retCode == FAIL)
     {
         endwin();

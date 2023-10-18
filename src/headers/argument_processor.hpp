@@ -21,5 +21,5 @@ public:
     int32_t processArguments(int argc, char** argv);
     void printHelp();
     void printMembers();
-    std::shared_ptr<std::vector<std::string>> getIpPrefixes();
+    std::vector<std::string> * getIpPrefixes();
 };

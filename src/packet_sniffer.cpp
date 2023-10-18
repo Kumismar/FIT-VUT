@@ -14,7 +14,7 @@ PacketSniffer::~PacketSniffer()
     delete[] this->inputFileName;
 }
 
-int32_t PacketSniffer::sniffPackets(std::shared_ptr<std::vector<std::string>> addresses)
+int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
 {
     std::shared_ptr<IpAddressManager> manager = std::make_shared<IpAddressManager>();
     manager->setAddressesAndMasks(addresses);
