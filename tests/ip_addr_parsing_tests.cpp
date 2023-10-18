@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 #include "../src/headers/argument_processor.hpp"
 #include "../src/headers/ip_address_parser.hpp"
-#include "../src/headers/errors.h"
+#include "../src/headers/constants.h"
 #include <string>
 
 TEST(IpAddressParsing, ValidIpAddresses)

@@ -4,7 +4,7 @@
 
 #include "headers/argument_processor.hpp"
 #include "headers/packet_sniffer.hpp"
-#include "headers/errors.h"
+#include "headers/constants.h"
 
 int main(int argc, char** argv)
 {

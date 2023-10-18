@@ -6,9 +6,7 @@
 
 #include "headers/argument_processor.hpp"
 #include "headers/ip_address_parser.hpp"
-#include "headers/errors.h"
-
-#define MIN_ARGUMENTS 4
+#include "headers/constants.h"
 
 ArgumentProcessor::~ArgumentProcessor()
 {

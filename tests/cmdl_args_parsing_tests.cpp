@@ -9,7 +9,7 @@
 
 #include "../src/headers/argument_processor.hpp"
 #include "../src/headers/ip_address_parser.hpp"
-#include "../src/headers/errors.h"
+#include "../src/headers/constants.h"
 #include "aux/test_utils.hpp"
 
 TEST(ArgumentProcessing, CorrectArguments)

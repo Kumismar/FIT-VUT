@@ -6,19 +6,7 @@
 #include <ncurses.h>
 
 #include "headers/packet_sniffer.hpp"
-#include "headers/errors.h"
-
-#define NO_OPTIMIZATION 0
-#define PROMISC 1
-#define CLIENT_IPADDR_POSITION 16
-#define MESSAGE_TYPE_LOCATION 240
-#define DHCP 53
-#define DHCP_TYPE_LOCATION 242
-#define ACK 5
-#define TIMEOUT_MS 10000
-#define BYTES_PER_WORD 4
-#define PACKET_SUCCESSFULLY_READ 1
-#define CAPTURE_TIMEOUT 0
+#include "headers/constants.h"
 
 PacketSniffer::~PacketSniffer()
 {

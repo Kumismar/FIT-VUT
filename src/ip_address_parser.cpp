@@ -3,15 +3,7 @@
 #include <cstdint>
 
 #include "headers/ip_address_parser.hpp"
-#include "headers/errors.h"
-
-#define STRING_START 0
-#define CORRECT_IP_ADDR_BYTE_COUNT 4
-#define MAX_MASK_NUMBER 32
-#define MIN_MASK_NUMBER 1
-#define MIN_BYTE_VALUE 0
-#define MAX_BYTE_VALUE 255
-#define DELIMITER 1
+#include "headers/constants.h"
 
 int32_t IpAddressParser::parseIPAddress(std::string ipAddr)
 {

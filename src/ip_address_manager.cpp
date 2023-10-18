@@ -6,13 +6,7 @@
 #include <ncurses.h>
 
 #include "headers/ip_address_manager.hpp"
-#include "headers/errors.h"
-
-#define MAX_MASK_NUMBER 32
-#define NO_ADDRESSES_TAKEN 0
-#define NO_UTILIZATION 0.0
-#define NETWORK_AND_BROADCAST 2
-#define CONVERT_TO_PERCENT 100
+#include "headers/constants.h"
 
 int32_t IpAddressManager::setAddressesAndMasks(std::shared_ptr<std::vector<std::string>> addresses)
 {
@@ -80,9 +74,11 @@ void IpAddressManager::processNewAddress(struct in_addr& addr)
         if (this->belongsToNetwork(clientAddressShifted, networkAddressShifted) && !this->isTaken(clientAddress, i))
         {
             this->numberOfTakenAddresses[i]++;
-            this->takenAddresses[i].push_back(clientAddress);
-            float maxIpAddressesInNetwork = (float)(std::pow(2, MAX_MASK_NUMBER - this->decimalMasks[i]) - NETWORK_AND_BROADCAST);
+            double networkRange = std::pow(2, MAX_MASK_NUMBER - this->decimalMasks[i]);
+            float maxIpAddressesInNetwork = (float)(networkRange - NETWORK_AND_BROADCAST);
             float utilization = (float)(this->numberOfTakenAddresses[i]) / maxIpAddressesInNetwork * CONVERT_TO_PERCENT;
+
+            this->takenAddresses[i].push_back(clientAddress);
             this->networkUtilizations[i] = utilization;
         }
     }
