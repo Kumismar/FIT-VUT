@@ -30,6 +30,10 @@ private:
      * @brief Reads interface name from `optarg` variable and stores it in this->interface.
      */
     void getInterfaceFromArg();
+
+    int32_t processOptions(int32_t argc, char** argv);
+
+    int32_t processIpPrefixes(int32_t argc, char **argv);
 public:
 
     /**

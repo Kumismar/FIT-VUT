@@ -35,14 +35,8 @@ void ArgumentProcessor::printHelp()
               << "   <ip-prefix>    Network prefix for which the statistics will be generated for" << std::endl;
 }
 
-int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
+int32_t ArgumentProcessor::processOptions(int32_t argc, char** argv)
 {
-    if (argc < MIN_ARGUMENTS)
-    {
-        std::cerr << "Not enough arguments!" << std::endl;
-        return INVALID_CMDL_OPTIONS;
-    }
-
     int32_t opt;
     while ((opt = getopt(argc, argv, "i:r:")) != -1)
     {
@@ -65,6 +59,39 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
             }
         }
     }
+    return SUCCESS;
+}
+
+
+int32_t ArgumentProcessor::processIpPrefixes(int32_t argc, char **argv)
+{
+    std::unique_ptr<IpAddressParser> parser = std::make_unique<IpAddressParser>();
+    for (int32_t i = optind; i < argc; i++)
+    {
+        std::string arg = std::string(argv[i]);
+        int32_t retCode = parser->parseIPAddress(arg);
+        if (retCode != SUCCESS)
+        {
+            return retCode;
+        }
+        this->ipPrefixes.push_back(arg);
+    }
+    return SUCCESS;
+}
+
+int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
+{
+    if (argc < MIN_ARGUMENTS)
+    {
+        std::cerr << "Not enough arguments!" << std::endl;
+        return INVALID_CMDL_OPTIONS;
+    }
+
+    int32_t retCode = this->processOptions(argc, argv);
+    if (retCode != SUCCESS)
+    {
+        return retCode;
+    }
 
     if (this->inputFileName == nullptr && this->interface == nullptr)
     {
@@ -77,16 +104,10 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         return INVALID_CMDL_OPTIONS;
     }
 
-    std::unique_ptr<IpAddressParser> parser = std::make_unique<IpAddressParser>();
-    for (int32_t i = optind; i < argc; i++)
+    retCode = this->processIpPrefixes(argc, argv);
+    if (retCode != SUCCESS)
     {
-        std::string arg = std::string(argv[i]);
-        int32_t retCode = parser->parseIPAddress(arg);
-        if (retCode != SUCCESS)
-        {
-            return retCode;
-        }
-        this->ipPrefixes.push_back(arg);
+        return retCode;
     }
 
     return SUCCESS;
