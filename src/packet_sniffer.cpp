@@ -89,22 +89,24 @@ void PacketSniffer::setInterface(char* dev)
 
 int32_t PacketSniffer::setUpSniffing()
 {
+    char pcapErrBuff[PCAP_ERRBUF_SIZE];
+    char filter[] = "udp port 67";
     if (this->interface != nullptr && this->inputFileName == nullptr)
     {
-        this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, this->pcapErrBuff);
+        this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, pcapErrBuff);
     }
     else
     {
-        this->handle = pcap_open_offline(this->inputFileName, this->pcapErrBuff);
+        this->handle = pcap_open_offline(this->inputFileName, pcapErrBuff);
     }
 
     if (this->handle == nullptr)
     {
-        std::cerr << "Can't listen on interface: " << this->interface << ", additional info: " << this->pcapErrBuff << std::endl;
+        std::cerr << "Can't listen on interface: " << this->interface << ", additional info: " << pcapErrBuff << std::endl;
         return FAIL;
     }
 
-    if (pcap_compile(this->handle, &this->filterProgram, this->filter, NO_OPTIMIZATION, PCAP_NETMASK_UNKNOWN) == PCAP_ERROR)
+    if (pcap_compile(this->handle, &this->filterProgram, filter, NO_OPTIMIZATION, PCAP_NETMASK_UNKNOWN) == PCAP_ERROR)
     {
         std::cerr << "pcap_compile() error:\n" << pcap_geterr(this->handle) << std::endl;
         return FAIL;

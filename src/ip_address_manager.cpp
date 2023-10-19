@@ -9,7 +9,7 @@
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
 
-int32_t IpAddressManager::setAddressesAndMasks(std::vector<std::string>& addresses)
+void IpAddressManager::setAddressesAndMasks(std::vector<std::string>& addresses)
 {
     for (std::string& ipAddress : addresses)
     {
@@ -19,7 +19,6 @@ int32_t IpAddressManager::setAddressesAndMasks(std::vector<std::string>& address
         this->addAddressToArray(address);
         this->addMaskToArray(mask);
     }
-    return SUCCESS;
 }
 
 void IpAddressManager::addAddressToArray(std::string& address)
