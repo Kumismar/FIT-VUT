@@ -4,6 +4,7 @@
 #include <sstream>
 #include <cmath>
 #include <ncurses.h>
+#include <syslog.h>
 
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
@@ -36,7 +37,7 @@ void IpAddressManager::addMaskToArray(std::string& mask)
     std::stringstream auxMask(mask);
     uint32_t decimalMask;
     auxMask >> decimalMask;
-    uint32_t totalAddressesAvailable = std::pow(2, MAX_MASK_NUMBER - decimalMask) - 2;
+    uint32_t totalAddressesAvailable = (uint32_t)std::pow(2, MAX_MASK_NUMBER - decimalMask) - NETWORK_AND_BROADCAST;
 
     this->decimalMasks.push_back(decimalMask);
     this->numberOfTakenAddresses.push_back(NO_ADDRESSES_TAKEN);
@@ -74,12 +75,13 @@ void IpAddressManager::processNewAddress(struct in_addr& addr)
         if (this->belongsToNetwork(clientAddressShifted, networkAddressShifted) && !this->isTaken(clientAddress, i))
         {
             this->numberOfTakenAddresses[i]++;
-            double networkRange = std::pow(2, MAX_MASK_NUMBER - this->decimalMasks[i]);
-            float maxIpAddressesInNetwork = (float)(networkRange - NETWORK_AND_BROADCAST);
-            float utilization = (float)(this->numberOfTakenAddresses[i]) / maxIpAddressesInNetwork * CONVERT_TO_PERCENT;
-
             this->takenAddresses[i].push_back(clientAddress);
+            float utilization = this->calculateUtilization(i);
             this->networkUtilizations[i] = utilization;
+            if (utilization > HALF_NETWORK_FULL)
+            {
+                this->logUtilization(i);
+            }
         }
     }
 }
@@ -112,5 +114,24 @@ bool IpAddressManager::isTaken(uint32_t clientAddress, size_t index)
     }
 
     return false;
+}
+
+void IpAddressManager::logUtilization(size_t index)
+{
+    uint32_t networkAddress = this->networkAddresses[index];
+    uint32_t networkMask = this->decimalMasks[index];
+    struct in_addr tmp;
+    tmp.s_addr = (in_addr_t)networkAddress;
+    char strAddr[INET_ADDRSTRLEN + MASK_LENGTH];
+    std::strcpy(strAddr, inet_ntoa(tmp));
+    std::strcat(strAddr, ('/' + std::to_string(networkMask)).c_str());
+    syslog(LOG_INFO, "prefix %s exceeded 50%% of allocations.\n", strAddr);
+}
+
+float IpAddressManager::calculateUtilization(size_t i)
+{
+    double networkRange = std::pow(2, MAX_MASK_NUMBER - this->decimalMasks[i]);
+    float maxIpAddressesInNetwork = (float)(networkRange - NETWORK_AND_BROADCAST);
+    return (float)(this->numberOfTakenAddresses[i]) / maxIpAddressesInNetwork * CONVERT_TO_PERCENT;
 }
 

@@ -21,6 +21,8 @@ private:
     void addMaskToArray(std::string& mask);
     bool isTaken(uint32_t clientAddress, size_t index);
     bool belongsToNetwork(uint32_t clientAddressShifted, uint32_t networkAddressShifted);
+    void logUtilization(size_t index);
+    float calculateUtilization(size_t i);
 
 public:
     void printMembers();

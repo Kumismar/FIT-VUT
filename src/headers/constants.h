@@ -12,6 +12,7 @@
 #define NETWORK_AND_BROADCAST 2
 #define CONVERT_TO_PERCENT 100
 #define MASK_LENGTH 3
+#define HALF_NETWORK_FULL 50
 
 /* ip_address_parser constants */
 #define STRING_START 0
