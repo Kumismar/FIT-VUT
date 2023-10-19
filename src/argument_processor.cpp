@@ -81,27 +81,16 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
     for (int32_t i = optind; i < argc; i++)
     {
         std::string arg = std::string(argv[i]);
-        if (parser->parseIPAddress(arg) == SUCCESS)
+        int32_t retCode = parser->parseIPAddress(arg);
+        if (retCode != SUCCESS)
         {
-            this->ipPrefixes.push_back(arg);
+            return retCode;
         }
-        else 
-        {
-            return INVALID_CMDL_OPTIONS;
-        }
+        this->ipPrefixes.push_back(arg);
     }
 
     return SUCCESS;
 }
-
-void ArgumentProcessor::printMembers()
-{
-    std::cout << this->interface << std::endl;
-    for (const std::string & ipPrefix : this->ipPrefixes)
-        std::cout << ipPrefix << "\t";
-    std::cout << std::endl; 
-}
-
 
 char* ArgumentProcessor::getInterface()
 {
