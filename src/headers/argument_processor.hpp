@@ -31,9 +31,31 @@ private:
      */
     void getInterfaceFromArg();
 
+    /**
+     * @brief Takes command-line options and processes them.
+     *
+     * Implemented with getopt().
+     *
+     * @param argc Number of command-line arguments passed to the program.
+     * @param argv Argument vector given to the program.
+     * @return SUCCESS (0) when all the options were valid.
+     * @return INVALID_CMDL_ARGS (11) when any of the options was invalid.
+     */
     int32_t processOptions(int32_t argc, char** argv);
 
+    /**
+     * @brief Takes IP prefixes (networks with masks), checks if they're valid and fills in some of the
+     * ArgumentProcessor's fields.
+     * @param argc Number of command-line arguments passed to the program.
+     * @param argv Argument vector given to the program.
+     * @return SUCCESS (0) when all the options were valid.
+     * @return SYSTEM_ERR (10) for extreme situations (std::stringstream error, operator>> error, etc.),
+     * where neither user nor author are responsible for what happened. Can only occur in IPAddressParser
+     * and this function only promotes it higher on the call stack.
+     * @return INVALID_CMDL_ARGS (11) when any of the arguments was invalid.
+     */
     int32_t processIpPrefixes(int32_t argc, char **argv);
+
 public:
 
     /**
@@ -55,10 +77,6 @@ public:
 
     /**
      * @brief Processes program command-line arguments.
-     *
-     * Implemented with (`getopt()`)[https://www.man7.org/linux/man-pages/man3/getopt.3.html],
-     * fills in interface name or file name and checks if given IP Prefixes are valid
-     * (uses instance of IP Address Parser for it).
      *
      * @param argc Number of arguments given to the program.
      * @param argv Argument vector given to the program.
