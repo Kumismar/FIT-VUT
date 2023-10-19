@@ -14,7 +14,6 @@
 #define MASK_LENGTH 3
 
 /* ip_address_parser constants */
-
 #define STRING_START 0
 #define CORRECT_IP_ADDR_BYTE_COUNT 4
 #define MAX_MASK_NUMBER 32
