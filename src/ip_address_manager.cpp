@@ -94,7 +94,7 @@ bool IpAddressManager::belongsToNetwork(uint32_t clientAddressShifted, uint32_t 
 
 bool IpAddressManager::isTaken(uint32_t clientAddress, size_t index)
 {
-    if (this->takenAddresses.size() < index || this->takenAddresses.empty())
+    if (this->takenAddresses.size() <= index || this->takenAddresses.empty())
     {
         std::vector<uint32_t> tmp;
         tmp.push_back(clientAddress);
