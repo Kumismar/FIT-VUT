@@ -16,10 +16,15 @@ int main(int argc, char** argv)
     {
         return EXIT_FAILURE;
     }
-    else if (retCode == INVALID_CMDL_OPTIONS)
+    else if (retCode == INVALID_CMDL_OPTIONS || retCode == FAIL)
     {
         ap->printHelp();
         return EXIT_FAILURE;
+    }
+    else if (retCode == WANTS_HELP)
+    {
+        ap->printHelp();
+        return EXIT_SUCCESS;
     }
 
     std::unique_ptr<PacketSniffer> ps = std::make_unique<PacketSniffer>();

@@ -52,6 +52,10 @@ int32_t ArgumentProcessor::processOptions(int32_t argc, char** argv)
                 this->getInterfaceFromArg();
                 break;
             }
+            case 'h':
+            {
+                return WANTS_HELP;
+            }
             default:
             {
                 std::cerr << "Invalid command-line option!" << std::endl;

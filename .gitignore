@@ -35,5 +35,4 @@ dhcp-stats
 build/
 valgrind.txt
 args.txt
-juju
-dhcp-homenetwork.pcap
+dhcp_files/

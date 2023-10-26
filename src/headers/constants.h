@@ -4,6 +4,7 @@
 #define SYSTEM_ERR 10
 #define INVALID_CMDL_OPTIONS 11
 #define MIN_ARGUMENTS 4
+#define WANTS_HELP 12
 
 /* ip_address_manager constants */
 #define MAX_MASK_NUMBER 32
@@ -27,14 +28,16 @@
 #define NO_OPTIMIZATION 0
 #define PROMISC 1
 #define CLIENT_IPADDR_POSITION 16
-#define MESSAGE_TYPE_LOCATION 240
-#define DHCP 53
+#define DHCP_MESSAGE_TYPE_OPTION 53
+#define PACKET_END_OPTION 255
 #define DHCP_TYPE_LOCATION 242
+#define DHCP_OPTIONS_LOCATION 240
 #define ACK 5
 #define TIMEOUT_MS 10000
 #define BYTES_PER_WORD 4
 #define PACKET_SUCCESSFULLY_READ 1
 #define CAPTURE_TIMEOUT 0
+#define SKIP_OPTIONCODE_AND_LENGTH 2
 
 /* General constants needed for program functionality */
 #define SUCCESS 0

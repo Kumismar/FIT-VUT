@@ -31,10 +31,30 @@ private:
     const u_char* packetData;
 
     /**
-     * @brief Extracts IP addresses from DHCP packets and calls IP Address Manmager to process it.
+     * @brief Extracts IP addresses from DHCP_MESSAGE_TYPE_OPTION packets and calls IP Address Manmager to process it.
      * @param manager IP Address Manager instance.
      */
     void processPacket(std::shared_ptr<IpAddressManager> manager);
+
+    /**
+     * @brief Skips all the packet headers (ethernet, ip and udp) and gets to the DHCP data.
+     * @return Pointer to DHCP data
+     */
+    u_char* skipToDHCPData();
+
+    /**
+     * @brief Skips DHCP data and gets to options of DHCP packet.
+     * @param dhcpData Pointer to DHCP data.
+     * @return Pointer to options location.
+     */
+    u_char* skipToOptions(u_char* dhcpData);
+
+    /**
+     * 
+     * @param options
+     * @return
+     */
+    u_char findDHCPMessageType(u_char *options);
 
 public:
     /**

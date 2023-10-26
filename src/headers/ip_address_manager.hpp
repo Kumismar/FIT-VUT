@@ -26,6 +26,8 @@ private:
     /** Network utilization of each IP address in this->networkAddresses, expressed with percentage. */
     std::vector<float> networkUtilizations;
 
+    std::vector<bool> logFlags;
+
     /** Auxiliary field used in a few methods, serves as string for temporary IP addresses. */
     char charAddress[INET_ADDRSTRLEN];
 

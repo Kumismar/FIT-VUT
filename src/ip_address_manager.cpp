@@ -64,22 +64,24 @@ void IpAddressManager::printMembers()
 
 void IpAddressManager::processNewAddress(struct in_addr& addr)
 {
+    uint32_t clientAddress = (uint32_t)addr.s_addr;
     for (size_t i = 0; i < this->networkAddresses.size(); i++)
     {
         uint32_t networkAddress = this->networkAddresses[i];
-        uint32_t clientAddress = (uint32_t)addr.s_addr;
         uint32_t numOfShifts = MAX_MASK_NUMBER - this->decimalMasks[i];
         uint32_t networkAddressShifted = networkAddress << numOfShifts;
         uint32_t clientAddressShifted = clientAddress << numOfShifts;
         if (this->belongsToNetwork(clientAddressShifted, networkAddressShifted) && !this->isTaken(clientAddress, i))
         {
             this->numberOfTakenAddresses[i]++;
+            this->logFlags.push_back(false);
             this->takenAddresses[i].push_back(clientAddress);
             float utilization = this->calculateUtilization(i);
             this->networkUtilizations[i] = utilization;
-            if (utilization > HALF_NETWORK_FULL)
+            if (utilization > HALF_NETWORK_FULL && !logFlags[i])
             {
                 this->logUtilization(i);
+                logFlags[i] = true;
             }
         }
     }

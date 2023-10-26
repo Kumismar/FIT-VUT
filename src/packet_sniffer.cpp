@@ -34,7 +34,7 @@ int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
         {
             if (this->packetHeader->caplen < DHCP_TYPE_LOCATION)
             {
-                std::cerr << "Can't read DHCP data; packet is too short." << std::endl;
+                std::cerr << "Can't read DHCP_MESSAGE_TYPE_OPTION data; packet is too short." << std::endl;
                 return FAIL;
             }
             this->processPacket(manager);
@@ -56,11 +56,10 @@ void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
 {
     struct in_addr clientNewAddress;
     char clientNewAddressStr[INET_ADDRSTRLEN];
-    // Skip ethernet, ip and udp headers before actual DHCP data
-    struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
-    const u_char* dhcpData = this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
-
-    if (dhcpData[MESSAGE_TYPE_LOCATION] == DHCP && dhcpData[DHCP_TYPE_LOCATION] == ACK)
+    u_char* dhcpData = this->skipToDHCPData();
+    u_char* options = this->skipToOptions(dhcpData);
+    u_char messageType = this->findDHCPMessageType(options);
+    if (messageType == ACK)
     {
         memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
         inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
@@ -123,6 +122,30 @@ void PacketSniffer::cleanUp()
 {
     pcap_freecode(&this->filterProgram);
     pcap_close(this->handle);
+}
+
+u_char *PacketSniffer::skipToDHCPData()
+{
+    // Skip ethernet, ip and udp headers before actual DHCP_MESSAGE_TYPE_OPTION data
+    struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
+    return (u_char*)(this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr));
+}
+
+u_char PacketSniffer::findDHCPMessageType(u_char *options)
+{
+    size_t i = 0;
+    while(options[i] != DHCP_MESSAGE_TYPE_OPTION && options[i] != PACKET_END_OPTION)
+    {
+        uint32_t optionLengthLocation = i + 1;
+        i += options[optionLengthLocation] + SKIP_OPTIONCODE_AND_LENGTH;
+    }
+    uint32_t optionData = i + 2;
+    return options[optionData];
+}
+
+u_char *PacketSniffer::skipToOptions(u_char *dhcpData)
+{
+    return dhcpData + DHCP_OPTIONS_LOCATION;
 }
 
 
