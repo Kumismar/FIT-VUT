@@ -35,7 +35,7 @@ private:
     /**
      * @brief Decides whether adress is already taken in network.
      * @param clientAddress Address to be checked.
-     * @param index Index to this->takenAddress, where clientAddress is searched.
+     * @param i Index to this->takenAddress, where clientAddress is searched.
      * @return
      */
     bool isTaken(uint32_t clientAddress, std::vector<uint32_t>& takenAddresses);
@@ -98,8 +98,14 @@ public:
      *
      * @param clientAddr Client address from DHCPACK packet.
      */
-    void processNewAddress(struct in_addr& addr);
     void processNewAddress(struct in_addr& clientAddr);
+
+    /**
+     * @brief Removes IP address yielded by the client in DHCPRELEASE packet and deletes all the data associated with it.
+     *
+     * @param clientAddress Client address from DHCPRELEASE packet.
+     */
+    void removeUsedIpAddr(struct in_addr &clientAddress);
 };
 
 

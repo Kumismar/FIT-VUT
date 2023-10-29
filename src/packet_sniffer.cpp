@@ -4,6 +4,8 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <ncurses.h>
+#include <chrono>
+#include <thread>
 
 #include "headers/packet_sniffer.hpp"
 #include "headers/constants.h"
@@ -54,18 +56,29 @@ int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
 
 void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
 {
-    struct in_addr clientNewAddress;
-    char clientNewAddressStr[INET_ADDRSTRLEN];
+    struct in_addr tmpAddress;
+    char tmpAddressStr[INET_ADDRSTRLEN];
+
     u_char* dhcpData = this->skipToDHCPData();
     u_char* options = this->skipToOptions(dhcpData);
     u_char messageType = this->findDHCPMessageType(options);
-    if (messageType == ACK)
+
+    if (messageType != DHCPACK && messageType != DHCPRELEASE)
     {
-        memcpy(&clientNewAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
-        inet_ntop(AF_INET, &clientNewAddress, clientNewAddressStr, INET_ADDRSTRLEN);
-        manager->processNewAddress(clientNewAddress);
-        manager->printMembers();
+        return;
     }
+    memcpy(&tmpAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
+    inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
+    if (messageType == DHCPACK)
+    {
+        manager->processNewAddress(tmpAddress);
+    }
+    else // DHCPRELEASE
+    {
+        manager->removeUsedIpAddr(tmpAddress);
+    }
+    manager->printMembers();
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 void PacketSniffer::setInputFile(char* fileName)

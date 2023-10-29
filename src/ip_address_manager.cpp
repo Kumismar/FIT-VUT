@@ -8,107 +8,104 @@
 
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
+#include "headers/network_data.h"
 
-void IpAddressManager::setAddressesAndMasks(std::vector<std::string>& addresses)
+void IpAddressManager::createNetworkData(std::vector<std::string>& addresses)
 {
     for (std::string& ipAddress : addresses)
     {
         size_t separatorPosition = ipAddress.find('/');
         std::string address = ipAddress.substr(0, separatorPosition);
         std::string mask = ipAddress.substr(separatorPosition + 1, std::string::npos);
-        this->addAddressToArray(address);
-        this->addMaskToArray(mask);
+
+        NetworkData tmp;
+        this->networks.push_back(tmp);
+        this->setNetworkAddress(address);
+        this->setNetworkMask(mask);
+        this->setBroadcastAddress();
     }
 }
 
-void IpAddressManager::addAddressToArray(std::string& address)
+void IpAddressManager::setNetworkAddress(std::string& address)
 {
     std::strcpy(this->charAddress, address.c_str());
     struct in_addr tmpAddr;
     inet_aton(this->charAddress, &tmpAddr);
-    uint32_t binaryIpAddr = (uint32_t)tmpAddr.s_addr;
-    this->networkAddresses.push_back(binaryIpAddr);
-    this->networkUtilizations.push_back(NO_UTILIZATION);
+
+    this->networks.back().address = (uint32_t)(ntohl(tmpAddr.s_addr));
 }
 
-void IpAddressManager::addMaskToArray(std::string& mask)
+void IpAddressManager::setNetworkMask(std::string& mask)
 {
     std::stringstream auxMask(mask);
     uint32_t decimalMask;
-    auxMask >> decimalMask;
-    uint32_t totalAddressesAvailable = (uint32_t)std::pow(2, MAX_MASK_NUMBER - decimalMask) - NETWORK_AND_BROADCAST;
+    auxMask >> decimalMask; // The data should be correct here - no catching exceptions
+    uint32_t totalAddressesAvailable = (uint32_t)(std::pow(2, MAX_MASK_NUMBER - decimalMask) - NETWORK_AND_BROADCAST);
 
-    this->decimalMasks.push_back(decimalMask);
-    this->numberOfTakenAddresses.push_back(NO_ADDRESSES_TAKEN);
-    this->maxHosts.push_back(totalAddressesAvailable);
+    NetworkData& lastNetwork = this->networks.back();
+    lastNetwork.decimalMask = decimalMask;
+    lastNetwork.numberOfTakenAddresses = NO_ADDRESSES_TAKEN;
+    lastNetwork.maxHosts = totalAddressesAvailable;
 }
 
 void IpAddressManager::printMembers()
 {
     clear();
     printw("%-15s %-12s %-20s %-10s\n", "IP-Prefix", "Max-Hosts", "Allocated addresses", "Utilization");
-    for (size_t i = 0; i < this->networkAddresses.size(); i++)
+    printw("-------------------------------------------------------------\n");
+    for (size_t i = 0; i < this->networks.size(); i++)
     {
-        struct in_addr tmp;
-        tmp.s_addr = (in_addr_t)(this->networkAddresses[i]);
-        inet_aton(this->charAddress, &tmp);
+        NetworkData& tmpNetwork = this->networks[i];
+        struct in_addr tmpAddr;
+        tmpAddr.s_addr = (in_addr_t)(tmpNetwork.address);
+        inet_aton(this->charAddress, &tmpAddr);
         char ipPrefixForPrint[INET_ADDRSTRLEN + MASK_LENGTH];
+
         std::strcpy(ipPrefixForPrint, this->charAddress);
-        std::strcat(ipPrefixForPrint, ('/' + std::to_string(this->decimalMasks[i])).c_str());
+        std::strcat(ipPrefixForPrint, ('/' + std::to_string(tmpNetwork.decimalMask)).c_str());
         printw("%-15s %-12d %-20d %.2f%%\n",
-             ipPrefixForPrint, this->maxHosts[i], this->numberOfTakenAddresses[i], this->networkUtilizations[i]
+             ipPrefixForPrint, tmpNetwork.maxHosts, tmpNetwork.numberOfTakenAddresses, tmpNetwork.utilization
         );
     }
     refresh();
 }
 
-void IpAddressManager::processNewAddress(struct in_addr& addr)
+void IpAddressManager::processNewAddress(struct in_addr& clientAddr)
 {
-    uint32_t clientAddress = (uint32_t)addr.s_addr;
-    for (size_t i = 0; i < this->networkAddresses.size(); i++)
+    uint32_t clientAddress = (uint32_t)(ntohl(clientAddr.s_addr));
+    for (size_t i = 0; i < this->networks.size(); i++)
     {
-        uint32_t networkAddress = this->networkAddresses[i];
-        uint32_t numOfShifts = MAX_MASK_NUMBER - this->decimalMasks[i];
-        uint32_t networkAddressShifted = networkAddress << numOfShifts;
-        uint32_t clientAddressShifted = clientAddress << numOfShifts;
-        if (this->belongsToNetwork(clientAddressShifted, networkAddressShifted) && !this->isTaken(clientAddress, i))
+        NetworkData& currentNetwork = this->networks[i];
+        if (this->belongsToNetwork(clientAddress, currentNetwork) &&
+            !this->isTaken(clientAddress, currentNetwork.takenAddresses))
         {
-            this->numberOfTakenAddresses[i]++;
-            this->logFlags.push_back(false);
-            this->takenAddresses[i].push_back(clientAddress);
-            float utilization = this->calculateUtilization(i);
-            this->networkUtilizations[i] = utilization;
-            if (utilization > HALF_NETWORK_FULL && !logFlags[i])
-            {
-                this->logUtilization(i);
-                logFlags[i] = true;
-            }
+            currentNetwork.numberOfTakenAddresses++;
+            currentNetwork.takenAddresses.push_back(clientAddress);
+            this->updateUtilization(currentNetwork);
         }
     }
 }
 
-bool IpAddressManager::belongsToNetwork(uint32_t clientAddressShifted, uint32_t networkAddressShifted)
+bool IpAddressManager::belongsToNetwork(uint32_t clientAddress, NetworkData& network)
 {
-    return (clientAddressShifted & networkAddressShifted) == networkAddressShifted;
+    if (clientAddress == network.address || clientAddress == network.broadcast)
+    {
+        return false;
+    }
+    uint32_t numOfShifts = MAX_MASK_NUMBER - network.decimalMask;
+    uint32_t networkAddressShifted = network.address >> numOfShifts;
+    uint32_t clientAddressShifted = clientAddress >> numOfShifts;
+    return clientAddressShifted == networkAddressShifted;
 }
 
-bool IpAddressManager::isTaken(uint32_t clientAddress, size_t index)
+bool IpAddressManager::isTaken(uint32_t clientAddress, std::vector<uint32_t>& takenAddresses)
 {
-    if (this->takenAddresses.size() <= index || this->takenAddresses.empty())
+    if (takenAddresses.empty())
     {
-        std::vector<uint32_t> tmp;
-        tmp.push_back(clientAddress);
-        this->takenAddresses.push_back(tmp);
         return false;
     }
 
-    if (this->takenAddresses[index].empty())
-    {
-        this->takenAddresses[index].push_back(clientAddress);
-        return false;
-    }
-
-    for (uint32_t takenAddr : takenAddresses[index])
+    for (const uint32_t& takenAddr: takenAddresses)
     {
         if (takenAddr == clientAddress)
             return true;
@@ -117,12 +114,10 @@ bool IpAddressManager::isTaken(uint32_t clientAddress, size_t index)
     return false;
 }
 
-void IpAddressManager::logUtilization(size_t index)
+void IpAddressManager::logUtilization(NetworkData &network)
 {
-    uint32_t networkAddress = this->networkAddresses[index];
-    uint32_t networkMask = this->decimalMasks[index];
-    struct in_addr tmp;
-    tmp.s_addr = (in_addr_t)networkAddress;
+    struct in_addr tmpAddr;
+    tmpAddr.s_addr = (in_addr_t)(network.address);
     char strAddr[INET_ADDRSTRLEN + MASK_LENGTH];
 
     std::strcpy(strAddr, inet_ntoa(tmpAddr));
@@ -133,10 +128,46 @@ void IpAddressManager::logUtilization(size_t index)
     closelog();
 }
 
-float IpAddressManager::calculateUtilization(size_t i)
+void IpAddressManager::updateUtilization(NetworkData &network)
 {
-    double networkRange = std::pow(2, MAX_MASK_NUMBER - this->decimalMasks[i]);
+    double networkRange = std::pow(2, MAX_MASK_NUMBER - network.decimalMask);
     float maxIpAddressesInNetwork = (float)(networkRange - NETWORK_AND_BROADCAST);
-    return (float)(this->numberOfTakenAddresses[i]) / maxIpAddressesInNetwork * CONVERT_TO_PERCENT;
+    network.utilization = (float)(network.numberOfTakenAddresses / maxIpAddressesInNetwork * CONVERT_TO_PERCENT);
+    if (network.utilization >= HALF_NETWORK_FULL && !network.logFlag)
+    {
+        this->logUtilization(network);
+        network.logFlag = true;
+    }
+    else if (network.utilization < HALF_NETWORK_FULL && network.logFlag)
+    {
+        network.logFlag = false;
+    }
+}
+
+void IpAddressManager::removeUsedIpAddr(struct in_addr &clientAddress)
+{
+    uint32_t addrToRemove = (uint32_t)(ntohl(clientAddress.s_addr));
+    for (size_t i = 0; i < this->networks.size(); i++)
+    {
+        NetworkData& currentNetwork = this->networks[i];
+        for (size_t j = 0; j < currentNetwork.takenAddresses.size(); j++)
+        {
+            std::vector<uint32_t>& takenAddresses = currentNetwork.takenAddresses;
+            if (takenAddresses[j] == addrToRemove)
+            {
+                takenAddresses.erase(takenAddresses.begin() + j);
+                currentNetwork.numberOfTakenAddresses--;
+                this->updateUtilization(currentNetwork);
+                break;
+            }
+        }
+    }
+}
+
+void IpAddressManager::setBroadcastAddress()
+{
+    NetworkData& lastNetwork = this->networks.back();
+    uint32_t binaryMask = 0xFFFFFFFF << (MAX_MASK_NUMBER - lastNetwork.decimalMask);
+    lastNetwork.broadcast = lastNetwork.address | ~binaryMask;
 }
 
