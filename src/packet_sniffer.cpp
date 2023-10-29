@@ -17,7 +17,7 @@ PacketSniffer::~PacketSniffer()
 int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
 {
     std::shared_ptr<IpAddressManager> manager = std::make_shared<IpAddressManager>();
-    manager->setAddressesAndMasks(addresses);
+    manager->createNetworkData(addresses);
     while (true)
     {
         int32_t retCode = pcap_next_ex(this->handle, &this->packetHeader, &this->packetData);

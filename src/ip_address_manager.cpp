@@ -124,8 +124,9 @@ void IpAddressManager::logUtilization(size_t index)
     struct in_addr tmp;
     tmp.s_addr = (in_addr_t)networkAddress;
     char strAddr[INET_ADDRSTRLEN + MASK_LENGTH];
-    std::strcpy(strAddr, inet_ntoa(tmp));
-    std::strcat(strAddr, ('/' + std::to_string(networkMask)).c_str());
+
+    std::strcpy(strAddr, inet_ntoa(tmpAddr));
+    std::strcat(strAddr, ('/' + std::to_string(network.decimalMask)).c_str());
     openlog("dhcp-stats", LOG_PID, LOG_USER);
     syslog(LOG_INFO, "prefix %s exceeded 50%% of allocations.\n", strAddr);
     std::cout << "prefix " << strAddr << " exceeded 50%% of allocations." << std::endl;

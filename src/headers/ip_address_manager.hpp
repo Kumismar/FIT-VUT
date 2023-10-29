@@ -4,31 +4,13 @@
 #include <string>
 #include <memory>
 #include <cstdint>
+#include "network_data.h"
 
 class IpAddressManager
 {
 private:
-    /** Vector of IP Addresses given to program as command-line arguments. */
-    std::vector<uint32_t> networkAddresses;
+    std::vector<NetworkData> networks;
 
-    /** Vector of masks given to program as part of IP address as command-line arguments. */
-    std::vector<uint32_t> decimalMasks;
-
-    /** Numbers on index belong to this->networkAddresses[theSameIndex] and the count itself is equal to this->takenAddresses[theSameIndex].size(). */
-    std::vector<uint32_t> numberOfTakenAddresses;
-
-    /** Array of address arrays, each array contains addresses belonging to this->networkAddresses on the same index. */
-    std::vector<std::vector<uint32_t>> takenAddresses;
-
-    /** Maximum number of hosts for each IP address in this->networkAddresses. */
-    std::vector<uint32_t> maxHosts;
-
-    /** Network utilization of each IP address in this->networkAddresses, expressed with percentage. */
-    std::vector<float> networkUtilizations;
-
-    std::vector<bool> logFlags;
-
-    /** Auxiliary field used in a few methods, serves as string for temporary IP addresses. */
     char charAddress[INET_ADDRSTRLEN];
 
     /**
@@ -38,7 +20,7 @@ private:
      *
      * @param address Address to be pushed.
      */
-    void addAddressToArray(std::string& address);
+    void setNetworkAddress(std::string& address);
 
     /**
      * @brief Takes mask and pushes it into this->decimalMasks.
@@ -48,7 +30,7 @@ private:
      *
      * @param mask Mask to be pushed.
      */
-    void addMaskToArray(std::string& mask);
+    void setNetworkMask(std::string& mask);
 
     /**
      * @brief Decides whether adress is already taken in network.
@@ -56,7 +38,7 @@ private:
      * @param index Index to this->takenAddress, where clientAddress is searched.
      * @return
      */
-    bool isTaken(uint32_t clientAddress, size_t index);
+    bool isTaken(uint32_t clientAddress, std::vector<uint32_t>& takenAddresses);
 
     /**
      * @brief Decides whether client new address belongs to given network.
@@ -64,17 +46,17 @@ private:
      * Both of the addresses are shifted right by (32 - Mask), which takes out all the variable bits
      * in an IP address, because all the bits up to the position of Mask are the same.
      *
-     * @param clientAddressShifted
-     * @param networkAddressShifted
+     * @param clientAddress
+     * @param networkAddress
      * @return
      */
-    bool belongsToNetwork(uint32_t clientAddressShifted, uint32_t networkAddressShifted);
+    bool belongsToNetwork(uint32_t clientAddressShifted, NetworkData& network);
 
     /**
      * @brief Prints information to syslog if network utilization exceeds 50%
-     * @param index Index to vectors for finding the correct data.
+     * @param network Index to vectors for finding the correct data.
      */
-    void logUtilization(size_t index);
+    void logUtilization(NetworkData &network);
 
     /**
      * @brief Calculates utilization and converts it to percent.
@@ -84,7 +66,12 @@ private:
      * @param i Index to vectors for finding the correct data.
      * @return Utilization in percents.
      */
-    float calculateUtilization(size_t i);
+    void updateUtilization(NetworkData &network);
+
+    /**
+     * @brief Finds network broadcast address and sets it to NetworkData.
+     */
+    void setBroadcastAddress();
 
 public:
 
@@ -102,16 +89,17 @@ public:
      * @param addresses Addresses with masks given to program as command-line arguments.
      * @return
      */
-    void setAddressesAndMasks(std::vector<std::string>& addresses);
+    void createNetworkData(std::vector<std::string>& addresses);
 
     /**
      * @brief Processes new client address from sniffed DHCPACK packet.
      *
      * That includes checking if it's taken, to what networks it belongs, etc.
      *
-     * @param addr Client address from DHCPACK packet.
+     * @param clientAddr Client address from DHCPACK packet.
      */
     void processNewAddress(struct in_addr& addr);
+    void processNewAddress(struct in_addr& clientAddr);
 };
 
 
