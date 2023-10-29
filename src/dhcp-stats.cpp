@@ -37,7 +37,6 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    openlog("dhcp-stats", LOG_PID, LOG_USER);
     initscr();
     std::vector<std::string>* ipAddresses = ap->getIpPrefixes();
     retCode = ps->sniffPackets(*ipAddresses);
@@ -51,6 +50,5 @@ int main(int argc, char** argv)
     refresh();
     getch();
     endwin();
-    closelog();
     return EXIT_SUCCESS;
 }
