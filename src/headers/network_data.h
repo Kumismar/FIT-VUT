@@ -28,4 +28,8 @@ typedef struct networkData
 
     /** Network utilization of each IP address in this->networkAddresses, expressed with percentage. */
     bool logFlag = false;
+
+    /** Network address as c-style string. */
+    char charAddress[INET_ADDRSTRLEN];
+
 } NetworkData;

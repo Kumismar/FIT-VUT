@@ -28,11 +28,12 @@ void IpAddressManager::createNetworkData(std::vector<std::string>& addresses)
 
 void IpAddressManager::setNetworkAddress(std::string& address)
 {
-    std::strcpy(this->charAddress, address.c_str());
+    NetworkData& network = this->networks.back();
+    std::strcpy(network.charAddress, address.c_str());
     struct in_addr tmpAddr;
-    inet_aton(this->charAddress, &tmpAddr);
+    inet_aton(network.charAddress, &tmpAddr);
 
-    this->networks.back().address = (uint32_t)(ntohl(tmpAddr.s_addr));
+    network.address = (uint32_t)(ntohl(tmpAddr.s_addr));
 }
 
 void IpAddressManager::setNetworkMask(std::string& mask)
@@ -53,35 +54,33 @@ void IpAddressManager::printMembers()
     clear();
     printw("%-15s %-12s %-20s %-10s\n", "IP-Prefix", "Max-Hosts", "Allocated addresses", "Utilization");
     printw("-------------------------------------------------------------\n");
-    for (size_t i = 0; i < this->networks.size(); i++)
+    for (NetworkData& network : this->networks)
     {
-        NetworkData& tmpNetwork = this->networks[i];
         struct in_addr tmpAddr;
-        tmpAddr.s_addr = (in_addr_t)(tmpNetwork.address);
-        inet_aton(this->charAddress, &tmpAddr);
+        tmpAddr.s_addr = (in_addr_t)(network.address);
+        inet_aton(network.charAddress, &tmpAddr);
         char ipPrefixForPrint[INET_ADDRSTRLEN + MASK_LENGTH];
 
-        std::strcpy(ipPrefixForPrint, this->charAddress);
-        std::strcat(ipPrefixForPrint, ('/' + std::to_string(tmpNetwork.decimalMask)).c_str());
+        std::strcpy(ipPrefixForPrint, network.charAddress);
+        std::strcat(ipPrefixForPrint, ('/' + std::to_string(network.decimalMask)).c_str());
         printw("%-15s %-12d %-20d %.2f%%\n",
-             ipPrefixForPrint, tmpNetwork.maxHosts, tmpNetwork.numberOfTakenAddresses, tmpNetwork.utilization
+               ipPrefixForPrint, network.maxHosts, network.numberOfTakenAddresses, network.utilization
         );
     }
     refresh();
 }
 
-void IpAddressManager::processNewAddress(struct in_addr& clientAddr)
+void IpAddressManager::processNewAddress(struct in_addr& clientAddress)
 {
-    uint32_t clientAddress = (uint32_t)(ntohl(clientAddr.s_addr));
-    for (size_t i = 0; i < this->networks.size(); i++)
+    uint32_t clientAddr = (uint32_t)(ntohl(clientAddress.s_addr));
+    for (NetworkData& network : this->networks)
     {
-        NetworkData& currentNetwork = this->networks[i];
-        if (this->belongsToNetwork(clientAddress, currentNetwork) &&
-            !this->isTaken(clientAddress, currentNetwork.takenAddresses))
+        if (this->belongsToNetwork(clientAddr, network) &&
+            !this->isTaken(clientAddr, network))
         {
-            currentNetwork.numberOfTakenAddresses++;
-            currentNetwork.takenAddresses.push_back(clientAddress);
-            this->updateUtilization(currentNetwork);
+            network.numberOfTakenAddresses++;
+            network.takenAddresses.push_back(clientAddr);
+            this->updateUtilization(network);
         }
     }
 }
@@ -98,17 +97,14 @@ bool IpAddressManager::belongsToNetwork(uint32_t clientAddress, NetworkData& net
     return clientAddressShifted == networkAddressShifted;
 }
 
-bool IpAddressManager::isTaken(uint32_t clientAddress, std::vector<uint32_t>& takenAddresses)
+bool IpAddressManager::isTaken(uint32_t clientAddress, NetworkData &network)
 {
-    if (takenAddresses.empty())
+    for (std::vector<uint32_t>::iterator takenAddress = network.takenAddresses.begin(); takenAddress < network.takenAddresses.end(); takenAddress++)
     {
-        return false;
-    }
-
-    for (const uint32_t& takenAddr: takenAddresses)
-    {
-        if (takenAddr == clientAddress)
+        if (*takenAddress == clientAddress)
+        {
             return true;
+        }
     }
 
     return false;
@@ -116,16 +112,14 @@ bool IpAddressManager::isTaken(uint32_t clientAddress, std::vector<uint32_t>& ta
 
 void IpAddressManager::logUtilization(NetworkData &network)
 {
-    struct in_addr tmpAddr;
-    tmpAddr.s_addr = (in_addr_t)(network.address);
     char strAddr[INET_ADDRSTRLEN + MASK_LENGTH];
 
-    std::strcpy(strAddr, inet_ntoa(tmpAddr));
+    std::strcpy(strAddr, network.charAddress);
     std::strcat(strAddr, ('/' + std::to_string(network.decimalMask)).c_str());
     openlog("dhcp-stats", LOG_PID, LOG_USER);
     syslog(LOG_INFO, "prefix %s exceeded 50%% of allocations.\n", strAddr);
-    std::cout << "prefix " << strAddr << " exceeded 50%% of allocations." << std::endl;
     closelog();
+    std::cout << "prefix " << strAddr << " exceeded 50%% of allocations." << std::endl;
 }
 
 void IpAddressManager::updateUtilization(NetworkData &network)
@@ -147,18 +141,16 @@ void IpAddressManager::updateUtilization(NetworkData &network)
 void IpAddressManager::removeUsedIpAddr(struct in_addr &clientAddress)
 {
     uint32_t addrToRemove = (uint32_t)(ntohl(clientAddress.s_addr));
-    for (size_t i = 0; i < this->networks.size(); i++)
+    for (NetworkData& network : this->networks)
     {
-        NetworkData& currentNetwork = this->networks[i];
-        for (size_t j = 0; j < currentNetwork.takenAddresses.size(); j++)
+        for (std::vector<uint32_t>::iterator takenAddress = network.takenAddresses.begin(); takenAddress < network.takenAddresses.end(); takenAddress++)
         {
-            std::vector<uint32_t>& takenAddresses = currentNetwork.takenAddresses;
-            if (takenAddresses[j] == addrToRemove)
+            if (*takenAddress == addrToRemove)
             {
-                takenAddresses.erase(takenAddresses.begin() + j);
-                currentNetwork.numberOfTakenAddresses--;
-                this->updateUtilization(currentNetwork);
-                break;
+                network.takenAddresses.erase(takenAddress);
+                network.numberOfTakenAddresses--;
+                this->updateUtilization(network);
+                return;
             }
         }
     }

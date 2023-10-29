@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     {
         return EXIT_FAILURE;
     }
-    else if (retCode == INVALID_CMDL_OPTIONS || retCode == FAIL)
+    else if (retCode == INVALID_CMDL_OPTIONS)
     {
         ap->printHelp();
         return EXIT_FAILURE;

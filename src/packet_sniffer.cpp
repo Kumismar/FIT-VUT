@@ -63,22 +63,20 @@ void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
     u_char* options = this->skipToOptions(dhcpData);
     u_char messageType = this->findDHCPMessageType(options);
 
-    if (messageType != DHCPACK && messageType != DHCPRELEASE)
-    {
-        return;
-    }
-    memcpy(&tmpAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
-    inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
     if (messageType == DHCPACK)
     {
+        memcpy(&tmpAddress, dhcpData + YIADDR_POSITION, sizeof(struct in_addr));
+        inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
         manager->processNewAddress(tmpAddress);
     }
-    else // DHCPRELEASE
+    else if (messageType == DHCPRELEASE)
     {
+        memcpy(&tmpAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
+        inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
         manager->removeUsedIpAddr(tmpAddress);
     }
     manager->printMembers();
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+//    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
 void PacketSniffer::setInputFile(char* fileName)
@@ -141,7 +139,8 @@ u_char *PacketSniffer::skipToDHCPData()
 {
     // Skip ethernet, ip and udp headers before actual DHCP_MESSAGE_TYPE_OPTION data
     struct ip* ipHeader = (struct ip*)(this->packetData + ETHER_HDR_LEN);
-    return (u_char*)(this->packetData + ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr));
+    uint32_t toSkip = ETHER_HDR_LEN + ipHeader->ip_hl*BYTES_PER_WORD + sizeof(struct udphdr);
+    return (u_char*)(this->packetData + toSkip);
 }
 
 u_char PacketSniffer::findDHCPMessageType(u_char *options)

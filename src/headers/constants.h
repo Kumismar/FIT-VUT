@@ -3,8 +3,8 @@
 /* argument_processor constants */
 #define SYSTEM_ERR 10
 #define INVALID_CMDL_OPTIONS 11
-#define MIN_ARGUMENTS 4
 #define WANTS_HELP 12
+#define MIN_ARGUMENTS 4
 
 /* ip_address_manager constants */
 #define MAX_MASK_NUMBER 32
@@ -27,7 +27,8 @@
 /* packet_sniffer constants */
 #define NO_OPTIMIZATION 0
 #define PROMISC 1
-#define CLIENT_IPADDR_POSITION 16
+#define CLIENT_IPADDR_POSITION 12
+#define YIADDR_POSITION 16
 #define DHCP_MESSAGE_TYPE_OPTION 53
 #define PACKET_END_OPTION 255
 #define DHCP_TYPE_LOCATION 242

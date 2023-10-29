@@ -46,13 +46,13 @@ int32_t IpAddressParser::parseIPAddress(std::string ipAddr)
     else
     {
         std::cerr << "Didn't find bytes and mask separator ('/')." << std::endl;
-        return FAIL;
+        return INVALID_CMDL_OPTIONS;
     }
 
     if (byteCount != CORRECT_IP_ADDR_BYTE_COUNT)
     {
         std::cerr << "Incorrect number of IP address bytes." << std::endl;
-        return FAIL; 
+        return INVALID_CMDL_OPTIONS;
     }
     return SUCCESS;
 }
@@ -77,14 +77,14 @@ int32_t IpAddressParser::parseByte()
         else if (addr.fail())
         {
             std::cerr << "Couldn't extract number from IP address byte." << std::endl;
-            return FAIL;
+            return INVALID_CMDL_OPTIONS;
         }
     }
     
     if (byte < MIN_BYTE_VALUE || byte > MAX_BYTE_VALUE)
     {
         std::cerr << "Byte value out of range." << std::endl;
-        return FAIL; 
+        return INVALID_CMDL_OPTIONS;
     }
     return SUCCESS;
 }
@@ -109,14 +109,14 @@ int32_t IpAddressParser::parseMask()
         else if (mask.fail())
         {
             std::cerr << "Couldn't extract number from IP address mask." << std::endl;
-            return FAIL;
+            return INVALID_CMDL_OPTIONS;
         }
     }
 
     if (maskNum < MIN_MASK_NUMBER || maskNum > MAX_MASK_NUMBER)
     {
         std::cerr << "Mask number out of range." << std::endl;
-        return FAIL; 
+        return INVALID_CMDL_OPTIONS;
     }
     return SUCCESS;
 }
