@@ -38,8 +38,8 @@ int main(int argc, char** argv)
     }
 
     initscr();
-    std::vector<std::string>* ipAddresses = ap->getIpPrefixes();
-    retCode = ps->sniffPackets(*ipAddresses);
+    std::vector<std::string> ipAddresses = ap->getIpPrefixes();
+    retCode = ps->sniffPackets(ipAddresses);
     ps->cleanUp();
     if (retCode == FAIL)
     {

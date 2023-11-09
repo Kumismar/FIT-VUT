@@ -127,7 +127,7 @@ char* ArgumentProcessor::getFileName()
     return this->inputFileName;
 }
 
-std::vector<std::string>* ArgumentProcessor::getIpPrefixes()
+std::vector<std::string> ArgumentProcessor::getIpPrefixes()
 {
-    return &this->ipPrefixes;
+    return this->ipPrefixes;
 }

@@ -99,5 +99,5 @@ public:
      *
      * @return Pointer to vector of IP prefixes.
      */
-    std::vector<std::string>* getIpPrefixes();
+    std::vector<std::string> getIpPrefixes();
 };
