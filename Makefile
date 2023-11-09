@@ -30,3 +30,6 @@ clean:
 
 valgrind: 
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.txt ./$(EXECUTABLE) $(CMDL_ARGS)
+
+man:
+	man -l dhcp-stats.1

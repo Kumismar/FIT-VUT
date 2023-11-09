@@ -1,0 +1,21 @@
+.TH dhcp-stats 1
+.SH NAME
+dhcp-stats \- Monitor DHCP communication
+.SH SYNOPSIS
+.B dhcp-stats
+[\fB\-r\fR \fIfilename\fR]
+[\fB\-\i\fR \fIinterface\fR]
+\fIip-prefix\fR [ \fIip-prefix\fR [...] ]
+.SH DESCRIPTION
+.B dhcp-stats
+monitors DHCP communication on given prefixes by sniffing DHCPACK and DHCPRELEASE packets.
+.SH OPTIONS
+.TP
+.BR \-i
+Interface from which the program will listen for packets.
+.TP
+.BR \-r
+File from which the program will read packets.
+.TP
+.BR ip-prefix
+Network address with mask in x.x.x.x/xx format
