@@ -36,3 +36,12 @@ build/
 valgrind.txt
 args.txt
 dhcp_files/
+
+# Latex files
+*.aux
+*.dvi
+*.fdb_latexmk
+*.fls
+*.log
+*.ps
+*.toc

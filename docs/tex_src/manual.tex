@@ -1,0 +1,46 @@
+\documentclass[a4paper, 11pt, hidelinks]{article}
+\usepackage[left=2cm, top=3cm, text={17cm, 24cm}]{geometry}
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+
+\begin{document}
+
+
+\begin{titlepage}
+    \begin{center}
+        \Huge \textsc{Vysoké učení technické v~Brně} \\
+        \huge \textsc{Fakulta informačních technologií} \\
+        \vspace{\stretch{0.382}}
+        Síťové aplikace a správa sítí\,--\,monitorování DHCP komunikace\\
+        \Huge  Manuál k programu dhcp-stats\\
+        \vspace{\stretch{0.618}}
+        \Large \today{} \hfill Ondřej Koumar (xkouma02)
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\section{Uvedení do problematiky}\label{1_problematika}
+Program \texttt{dhcp-stats} je schopen monitorovat DHCP provoz na vybraném rozhraní, ať už se jedná o ethernetové či bezdrátové, a generovat statistiku pro uživatelem zadaný síťový prefix.
+Tato vlastnost se může hodit v situaci, kdy DHCP server tuto statistiku neposkytuje. 
+Samotné monitorování spočívá v odchytávání a filtraci paketů, které na daném rozhraní projdou, a hledání podstatných informací v nich.
+V paketu, který je odeslán DHCP serverem, případně klientem, který DHCP službu využívá, jsou umístěny veškeré informace, které jsou potřebné pro generování statistiky pro síťový prefix.
+
+Pokud uživatel nemá potřebu přímo monitorovat DHCP provoz naživo, má možnost využít zpracování \emph{.pcap} nebo \emph{.pcapng} souborů (které si může vygenerovat například pomocí programu Wireshark\footnote{O programu se dozvíte na \href{https://www.wireshark.org/about.html}{https://www.wireshark.org/about.html}.}).
+To se hodí například v případě, že má již síť zmonitorovanou a nepotřebuje real-time statistiku.
+V tomto případě je ale počítat s tím, že možnosti programu jsou omezené; vypíše se pouze finální podoba sítě, tedy vytížení prefixů v době, kdy skončilo zachytávání paketů.
+Je ale možné do programu uměle vložit zpoždění tak, aby šlo vidět zpracování paketů po jednom.
+Více o této možnosti v kapitole \ref{3_popis}.
+
+\section{Návrh aplikace}\label{2_navrh}
+
+\section{Popis implementace}\label{3_popis}
+
+\section{Základní informace o programu}\label{4_zakladni_info}
+
+\section{Návod na použití}\label{5_navod}
+
+\end{document}
