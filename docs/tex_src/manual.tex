@@ -3,6 +3,9 @@
 \usepackage[czech]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
 
 \begin{document}
 
@@ -23,9 +26,14 @@
 
 \newpage
 
-\section{Uvedení do problematiky}\label{1_problematika}
+\section*{Úvod}\label{0_uvod}
+\addcontentsline{toc}{section}{Úvod}
+Ne vždy má uživatel možnost sledovat statistiku vytížení síťových prefixů.
+Některé DHCP servery tuto statistiku poskytují samy, případně se mohou parsovat adresy z jejich logů.
+Pokud ale takováto možnost není, nezbývá moc jiných možností, než sledovat DHCP provoz odchytáváním paketů a manuálním parsováním IP adres, které jsou klientským stanicím přidělovány.
+To je use-case, pro který byl program \texttt{dhcp-stats} vytvořen.
+
 Program \texttt{dhcp-stats} je schopen monitorovat DHCP provoz na vybraném rozhraní, ať už se jedná o ethernetové či bezdrátové, a generovat statistiku pro uživatelem zadaný síťový prefix.
-Tato vlastnost se může hodit v situaci, kdy DHCP server tuto statistiku neposkytuje. 
 Samotné monitorování spočívá v odchytávání a filtraci paketů, které na daném rozhraní projdou, a hledání podstatných informací v nich.
 V paketu, který je odeslán DHCP serverem, případně klientem, který DHCP službu využívá, jsou umístěny veškeré informace, které jsou potřebné pro generování statistiky pro síťový prefix.
 
@@ -34,6 +42,73 @@ To se hodí například v případě, že má již síť zmonitorovanou a nepot�
 V tomto případě je ale počítat s tím, že možnosti programu jsou omezené; vypíše se pouze finální podoba sítě, tedy vytížení prefixů v době, kdy skončilo zachytávání paketů.
 Je ale možné do programu uměle vložit zpoždění tak, aby šlo vidět zpracování paketů po jednom.
 Více o této možnosti v kapitole \ref{3_popis}.
+
+\newpage
+\section{Uvedení do problematiky}\label{1_problematika}
+DHCP (\emph{Dynamic Host Configuration Protocol}) je popsán v rámci \href{https://datatracker.ietf.org/doc/html/rfc2131}{RFC 2131}. 
+DHCP se skládá za dvou částí\,--\,z protokolu zajišťujícího doručování parametrů od serveru ke klientovi a systém alokací IP adres.
+Je postaven na modelu klient-server, kde server je zařízení, které poskytuje parametry přes přenosovou část protokolu a klient je zařízení, které o tyto parametry DHCP server žádá.
+
+\subsection{DHCP pakety}\label{1_1_pakety}
+Položky DHCP paketu a jejich vysvětlení:
+\begin{table}[ht]
+  \centering
+  \begin{tabularx}{\textwidth}{p{0.1\textwidth}p{0.15\textwidth}p{0.67\textwidth}}
+    \toprule
+    \textbf{Pole} & \textbf{Velikost (B)} & \textbf{Popis} \\
+    \midrule
+    \texttt{op} & 1 & Kód operace zprávy. \\
+    \texttt{htype} & 1 & Typ hardwarové adresy. \\
+    \texttt{hlen} & 1 & Délka hardwarové adresy. \\
+    \texttt{hops} & 1 & Počet relay agentů\footnotemark[2], přes které šla DHCP zpráva. \\
+    \texttt{xid} & 4 & ID transakce, které používají jak server, tak klient k identifikaci zpráv. \\
+    \texttt{secs} & 2 & Počet sekund od začátku transakce (žádost o adresu nebo obnovení \emph{lease time}.) \\
+    \texttt{flags} & 2 & Příznak broadcastu. \\
+    \texttt{ciaddr} & 4 & IP adresa klienta. \\
+    \texttt{yiaddr} & 4 & Nová klientova IP adresa (použito při nabízení a potvrzování adres od serveru). \\
+    \texttt{siaddr} & 4 & IP adresa serveru, který má klient kontaktovat při další zprávě. \\
+    \texttt{giaddr} & 4 & IP adresa relay agenta, přes kterého se posílají DHCP zprávy. \\
+    \texttt{chaddr} & 16 & MAC adresa klientovy síťové karty. \\
+    \texttt{sname} & 64 & Jméno serveru (volitelné). \\
+    \texttt{file} & 128 & Název souboru, který klient použije pro bootstrapping\footnotemark[3]. \\
+    \texttt{options} & n & Pole volitelných parametrů.\\
+    \bottomrule
+  \end{tabularx}
+  \label{tab:dhcp-format}
+  \caption{Formát zprávy DHCP}
+\end{table}
+
+\footnotetext[2]{V kontextu DHCP se jedná o proces získání potřebných informací od DHCP serveru.}
+\footnotetext[3]{Relay agenti mají na starost přeposílání paketů mezi klientem a serverem při DHCP komunikaci.}
+
+Poznámky:
+\begin{itemize}
+    \item \texttt{op} Může nabývat hodnot BOOTREQUEST a BOOTREPLY.
+    \item Výčet typů hardwarových adres \href{https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml#arp-parameters-2}{\textcolor{blue}{zde}}.
+    \item \texttt{xid} je náhodné číslo generované klientem, používá se po celou dobu komunikace.
+    \item \texttt{flags} je ve formátu: 
+
+        \begin{table}[ht]
+            \centering
+            \begin{tabular}{|c|c|}
+            \hline
+            \textbf{Bits} & \textbf{Value} \\
+            \hline
+            0             & B \\
+            1-15          & MBZ \\
+            \hline
+            \end{tabular}
+            \caption{\texttt{flags} pole}
+            \label{tab:dhcp_flags}
+        \end{table}
+        
+        kde \emph{B} je příznak, že zpráva byla poslána na broadcastovou adresu sítě, \emph{MBZ} je 15 bitů, které jsou vždy nastaveny na 0.
+    \item \texttt{options} je proměnné velikosti, klient ale musí být připraven přijmout DHCP zprávu, která má velikost \texttt{options} alespoň 312\,B.
+    Ne všechny parametry se do pole \texttt{options} musí vlézt; pokud je třeba, DHCP server může využít pole \texttt{sname} případně pole \texttt{file} pro uložení zbývajících parametrů.
+    Pro výčet parametrů, které se v tomto poli mohou vyskytnout, vizte \href{https://www.iana.org/assignments/bootp-dhcp-parameters/bootp-dhcp-parameters.xhtml#options}{\textcolor{blue}{zde}}.
+\end{itemize}
+
+\subsection{DHCP komunikace}\label{1_2_komunikace}
 
 \section{Návrh aplikace}\label{2_navrh}
 
