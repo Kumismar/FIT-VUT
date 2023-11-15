@@ -5,7 +5,7 @@
 #include "headers/argument_processor.hpp"
 #include "headers/packet_sniffer.hpp"
 #include "headers/constants.h"
-#include "headers/AllocList.hpp"
+#include "headers/alloc_list.hpp"
 
 std::list<ListInsertable*> AllocList;
 

@@ -9,7 +9,7 @@
 
 #include "headers/packet_sniffer.hpp"
 #include "headers/constants.h"
-#include "AllocList.hpp"
+#include "alloc_list.hpp"
 
 PacketSniffer::PacketSniffer()
 {
@@ -84,7 +84,7 @@ void PacketSniffer::processPacket(IpAddressManager& manager)
         inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
         manager.processNewAddress(tmpAddress);
     }
-    else if (messageType == DHCPRELEASE)
+    else if (messageType == DHCPRELEASE || messageType == DHCPDECLINE)
     {
         memcpy(&tmpAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
         inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
@@ -115,16 +115,14 @@ void PacketSniffer::setInterface(char* dev)
 int32_t PacketSniffer::setUpSniffing()
 {
     char pcapErrBuff[PCAP_ERRBUF_SIZE];
-    char filter[] = "udp port 67";
+    char filter[] = "udp port 67 or udp port 68";
     if (this->interface != nullptr && this->inputFileName == nullptr)
     {
         this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, pcapErrBuff);
-        this->isHandleInitialized = true;
     }
     else
     {
         this->handle = pcap_open_offline(this->inputFileName, pcapErrBuff);
-        this->isHandleInitialized = true;
     }
 
     if (this->handle == nullptr)
@@ -132,6 +130,7 @@ int32_t PacketSniffer::setUpSniffing()
         std::cerr << pcapErrBuff << std::endl;
         return FAIL;
     }
+    this->isHandleInitialized = true;
 
     if (pcap_compile(this->handle, &this->filterProgram, filter, NO_OPTIMIZATION, PCAP_NETMASK_UNKNOWN) == PCAP_ERROR)
     {

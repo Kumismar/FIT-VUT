@@ -7,6 +7,7 @@
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{amsmath}
 
 \bibliographystyle{plain}
 
@@ -174,7 +175,7 @@ Typicky klient kontaktuje stejný server\footnote[5]{Opět na broadcast, tentokr
 Server může přijmout, a tedy zaslat DHCPACK, případně odmítnout a klient započíná proces získávání IP adresy od začátku zprávou DHCPDISCOVER.
 \section{Návrh aplikace}\label{2_navrh}
 Aplikace je objektově orientovaná, a proto je implementována v C++.
-V aplikaci jsou 4 třídy:
+V aplikaci je 5 tříd:
 \begin{itemize}
     \item \textbf{ArgumentProcessor} má za úkol zpracovávat argumenty příkazové řádky, které byly programu předány. Kontroluje pouze správnost přepínačů a návratovou hodnotu od IpAddressParseru.
     \item \textbf{IpAddressParser} je pomocníkem ArgumentProcessoru. Z Argumentů příkazové řádky kontroluje správnost IP adres, které byly programu předány. 
@@ -183,20 +184,16 @@ V aplikaci jsou 4 třídy:
     \item \textbf{IpAddressManager} je hlavní datovou strukturou programu.
     Uchovává si informace o každé síti, která byla předána jako argument příkazové řádky. 
     Podporuje přidávání i odebírání adres ze sítí.
+    \item \textbf{ListInsertable} je třída, ze které dědí všechny ostatní. 
+    Je to kvůli tomu, aby všechny objekty, které budou vytvořeny, mohly být přidány do globálního seznamu referencí na objekty.
 \end{itemize}\newpage
 Dále se v aplikaci nachází datová struktura \textbf{NetworkData}. 
-V této struktuře jsou uchovávány veškeré parametry sítě, například:
-\begin{itemize}
-    \item adresa,
-    \item maska,
-    \item broadcastová adresa,
-    \item počet obsazených adres,
-    \item obsazené adresy,
-    \item obsazenost v \% a další.
-\end{itemize}
-S vektorem těchto datových struktur pracuje IpAddressManager.
+V této struktuře jsou uchovávány veškeré parametry sítě, s vektorem těchto datových struktur pracuje IpAddressManager.
 
-Program je uzpůsoben tomu, aby při přijmutí signálů \emph{SIGINT} a \emph{SIGTERM} byl bezpečně ukončen. 
+Program je uzpůsoben tomu, aby při přijmutí signálů \emph{SIGINT} a \emph{SIGTERM} byla uvolněna veškerá používaná paměť programu. 
+To se řeší přes globální seznam referencí na objekty, přidá se tam reference na každý vytvořený objekt.
+Díky tomu, že všechny objekty jsou konstruovány pouze jednou, není vůbec třeba řešit uvolňování paměti po použití objektu, stačí všechnu paměť uvolnit až na konci, paměti je zabíráno minimum.
+
 Vypisování informací o sítích je řešeno knihovnou ncurses. 
 Při překročení 50\,\% vytížení prefixu se standardní logovací rutinou \texttt{syslog} zaloguje tato informace do systémového logu.
 Detailnější popis v sekci \ref{3_popis}.
@@ -204,16 +201,116 @@ Detailnější popis v sekci \ref{3_popis}.
 \section{Popis implementace}\label{3_popis}
 Program je spuštěn funkcí \texttt{main}, která se nachází v souboru \emph{dhcp-stats.cpp}. 
 Volá ArgumentProcessor pro zpracování argumentů, poté PacketSniffer, aby začal zpracovávat pakety na rozhraní, případně v souboru.
+Je tu také obslužná rutina pro signály \emph{SIGINT} a \emph{SIGTERM}, která uvolní všechny alokované zdroje.
 
 \subsection{ArgumentProcessor}\label{3_1_ap}
+Třída zodpovědná za zpracování argumentů příkazové řádky.
+Nejdříve se v metodě \texttt{processOptions} zpracují přepínače včetně případných argumentů.
+To je implementováno pomocí funkce \texttt{getopt}.
+Po zpracování přepínačů se zavolá metoda \texttt{processIpPrefixes}, která cyklem prochází zbytek argumentů příkazové řádky, předává je IpAddressParseru na zkontrolování a přidává do vektoru \texttt{ipPrefixes}, jsou-li v korektním tvaru.
 
 \subsection{IpAddressParser}\label{3_2_ipap}
+Zpracuje IP prefix a vrátí pouze příznak \emph{SUCCESS} nebo \emph{FAIL} podle toho, jestli byla IP adresa a~maska ve správném formátu.
+Vstupní metodou je \texttt{parseIpAddress}, která má vstupní parametr adresu jako řetězec. Postupně zkontroluje byte po bytu, jestli sedí hodnoty a nakonec i masku. 
+Pro kontrolu samotných bytů a masky pak slouží metody \texttt{parseMask} a \texttt{parseByte}.
 
 \subsection{PacketSniffer}\label{3_3_ps}
+Třída, která zachytává pakety jdoucí přes rozhraní/načítá je ze souboru a extrahuje z nich data, která potřebuje IpAddressManager k tomu, aby si dokázal uchovávat informace o prefixech sítí.
 
+Pro otevření zachytávání paketů jsou z knihovny \emph{libpcap} použity standardně používáné funkce, a to \texttt{pcap\textunderscore open\textunderscore live} pro živé zachytávání packetů na rozhraní, \texttt{pcap\textunderscore open\textunderscore offline} pro čtení paketů ze souboru.
+Další konfigurační funkce, které jsou v kódu použity, jsou \texttt{pcap\textunderscore compile}, která slouží pro přeložení filtru z textové podoby do podoby, kterou může použít funkce \texttt{pcap\textunderscore setfilter}.
+Ta má za úkol aplikovat filter na aktuální zachytávací session.
+
+Pro samotné zpracování paketů jsou dvě možnosti.
+Lze použít funkci \texttt{pcap\textunderscore loop} a jako parametr jí předat obslužnou rutinu, která bude pakety zpracovávat; případně v nekonečné smyčce čekat na další pakety a volat rutinu manuálně.
+V této aplikaci, díky použití objektové orientace\footnote[6]{\texttt{pcap\textunderscore loop} očekává handler jako ukazatel na C-style funkci, tedy nelze se odkazovat na metodu v objektu.}, byl zvolen přístup s \texttt{pcap\textunderscore next\textunderscore ex} ve while smyčce.
+Navíc to má výhodu možnosti lépe kontrolovat chyby.
+
+V obslužné rutině \texttt{processPacket} se přeskakují nám nepotřebná data, tedy všechny hlavičky. Uchovávají se dva ukazatele do dat paketu, a to ukazatel na začátek DHCP dat a na začátek DHCP parametrů.
+Samotná metoda je na obrázku \ref{pic:processPacket}.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/processPacket.png}
+    \caption{metoda PacketSniffer::processPacket()}
+    \label{pic:processPacket}
+\end{figure} 
+
+Povšimněte si komentáře na úplně posledním řádku metody. 
+Tam si uživatel může nastavit čekání mezi jednotlivými zpracováními paketu.
+Hodí se to především pro offline sniffing, kde celý soubor je zpracován bleskovou rychlostí.
+Díky nastavení zpoždění se dá sledovat, jak probíhá vytížení prefixů z \emph{pcap} souborů průběžně.
+
+Klientova adresa nalezená v paketech se předá IpAddressManageru, ať už se jedná o DHCPACK, DHCPDECLINE či DHCPRELEASE paket.
 \subsection{IpAddressManager}\label{3_4_ipam}
+Důležitou součástí této třídy je datová struktura \texttt{NetworkData}.
+Ta obsahuje tyto informace o síti:
+\begin{itemize}
+    \item binární adresa prefixu,
+    \item decimální maska prefixu,
+    \item binární broadcastová adresa,
+    \item počet zabraných adres,
+    \item vektor zabraných adres (binárně),
+    \item maximální počet klientů,
+    \item využití sítě v \%,
+    \item logovací příznak,
+    \item adresa jako C-style string. 
+\end{itemize}
+Na počátku, po zpracování argumentů příkazové řádky, se vytvoří vektor s těmito strukturami, je jich stejný počet, jako počet prefixů dodaných programu.
+Prozatím se nastaví pouze adresa prefixu binárně i řetězec, maska prefixu, z čehož se zároveň spočítá maximální počet klientů a nakonec broadcast.
 
-\section{Základní informace o programu}\label{4_zakladni_info}
+V průběhu programu se tyto informace průběžně aktualizují.
+Po zachytnutí paketu je zavolána metoda \texttt{processNewAddress}.
+Pro každou síť zkontroluje, jestli do ní patří, a pokud ano, tak o tom vloží do daného prefixu informace. 
+Kontroluje se také, že adresa ještě není zabraná.
+Celá metoda na obrázku \ref{pic:processNewAddress}.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/processNewAddress.png}
+    \caption{Metoda IpAddressManager::processNewAddress()}
+    \label{pic:processNewAddress}
+\end{figure}
+
+Podobně funguje i odstraňování informace o adrese.
+Prochází se vektory adres ve všech prefixech a pokud se tam nachází, odstraní se a aktualizují se informace v daném prefixu.
+Celá metoda pak vypadá takto:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/removeUsedIpAddr.png}
+    \caption{Metoda IpAddressManager::removeUsedIpAddr()}
+    \label{pic:removeUsedIpAddr}
+\end{figure}
+
+Metoda \texttt{updateUtilization} funguje na principu jednoduché matematiky.
+Víme, že maximální počet připojených v podsíti je $2^{32-\text{Maska sítě}}-2$.
+Dále $ \frac{\text{Počet použitých adres}}{\text{Maximální počet adres}}$ nám dá normalizované využití prefixu. 
+Na \% lze převést vynásobením 100.
+
+S adresami se manipuluje v binární formě. Při hledání, zda adresa patří do prefixu, stačí vyshiftovat kontrolovanou adresu o $(\text{Maximální maska} - \text{Maska sítě})$ míst a porovnat s adresou prefixu.
+Hledání broadcastové adresy je zajímavější. Na bitech, které se mohou měnit v rámci prefixu, potřebujeme jedničku.
+Tam, kde jsou bity pevné, nesmíme měnit. Už to nás vede na bitovou operaci \emph{or}, jen potřebujeme získat tu správnou bitovou masku.
+Stačí vzít 32 bitů s logickou '1', vyshiftovat zprava potřebný počet nul a invertovat.
+Na stejném principu je to v programu implementováno, vizte obrázek \ref{pic:setBroadcastAddress}.
+
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img/setBroadcastAddress.png}
+    \caption{Metoda IpAddressManager::setBroadcastAddress()}
+    \label{pic:setBroadcastAddress}
+\end{figure}
+
+\subsection{ListInsertable}\label{3_5_ListInsertable}
+Třída ListInsertable implementuje velmi jednoduchý mechanismus podobný garbage collectoru, který uklidí dosud neodklizenou paměť programu, což se hodí nejvíce při neočekávaném ukončení programu.
+Spočívá v tom, že všechny ostatní třídy dědí od této třídy, což zaručuje, že všechny třídy mohou nabývat typu \texttt{ListInsertable}.
+
+Dále je v programu implementován globální seznam, který obsahuje reference na objekty typu \texttt{ListInsertable}.
+Při konstrukci každého objektu si objekt přidá referenci na sebe do globálního seznamu.
+Díky využití polymorfismu a virtuálnímu destruktoru třídy \texttt{ListInsertable} se při odstraňování ze seznamu spustí správný destruktor a objekt se ze seznamu korektně vymaže. 
+
+Tento mechanismus dvě výhody:
+\begin{enumerate}
+    \item korektní uvolnění paměti při všech situacích, stačí jen zavolat funkci \texttt{deleteAll},
+    \item odpadá potřeba mazat objekt ihned po jeho použití\footnote[7]{Není to nejlepší programátorská technika, ale v takto malém programu s tím nemůže nastat problém s nedostatkem paměti.}.
+\end{enumerate}
 
 \section{Návod na použití}\label{5_navod}
 

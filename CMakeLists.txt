@@ -7,10 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 file(GLOB SOURCE_FILES "src/*.cpp")
-add_executable(dhcp-stats ${SOURCE_FILES}
-        src/headers/ListInsertable.hpp
-        src/headers/AllocList.hpp
-        src/AllocList.cpp)
+add_executable(dhcp-stats ${SOURCE_FILES})
 
 target_include_directories(dhcp-stats PRIVATE src/headers)
 target_compile_options(dhcp-stats PRIVATE -Wall -Wextra -g)
