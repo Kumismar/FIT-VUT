@@ -2,14 +2,14 @@
 
 #include <pcap.h>
 #include <fstream>
-#include <memory>
 #include <cstdint>
 #include "argument_processor.hpp"
 #include "ip_address_manager.hpp"
+#include "ListInsertable.hpp"
 /**
  * @brief Class responsible for sniffing and extracting information from packets.
  */
-class PacketSniffer
+class PacketSniffer : public ListInsertable
 {
 private:
     /** C-string style name of interface that the program listens on. */
@@ -20,9 +20,11 @@ private:
 
     /** Sniffing session handler. */
     pcap_t* handle;
+    bool isHandleInitialized = false;
 
     /** Structure representing instructions processing packets. */
     struct bpf_program filterProgram;
+    bool isFilterProgramInitialized = false;
 
     /** Header of captured packets. */
     struct pcap_pkthdr* packetHeader;
@@ -34,7 +36,7 @@ private:
      * @brief Extracts IP addresses from DHCP_MESSAGE_TYPE_OPTION packets and calls IP Address Manmager to process it.
      * @param manager IP Address Manager instance.
      */
-    void processPacket(std::shared_ptr<IpAddressManager> manager);
+    void processPacket(IpAddressManager& manager);
 
     /**
      * @brief Skips all the packet headers (ethernet, ip and udp) and gets to the DHCP data.
@@ -57,6 +59,12 @@ private:
     u_char findDHCPMessageType(u_char *options);
 
 public:
+
+    /**
+     * Inserts new object to AllocList.
+     */
+    PacketSniffer();
+
     /**
      * @brief Frees allocated memory for c-style string fields.
      */
@@ -89,9 +97,4 @@ public:
      * @return FAIL (-1) on error when reading packet.
      */
     int32_t sniffPackets(std::vector<std::string>& addresses);
-
-    /**
-     * @brief Ends handling session and frees memory allocated for filtering program instructions.
-     */
-    void cleanUp();
 };

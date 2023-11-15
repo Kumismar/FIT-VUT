@@ -6,11 +6,9 @@
             "request": "launch",
             "program": "${workspaceRoot}/dhcp-stats",
             "args": [
-                "-i",
-                "eth0",
                 "-r",
-                "args.txt",
-                "1.1.1.1/1"
+                "${workspaceRoot}/dhcp_files/dhcp-ack-random.pcapng",
+                "192.168.0.0/24"
             ],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

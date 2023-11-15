@@ -34,8 +34,6 @@
 dhcp-stats
 build/
 valgrind.txt
-args.txt
-dhcp_files/
 cmake-build-debug/
 
 # Latex files
@@ -47,3 +45,5 @@ cmake-build-debug/
 *.ps
 *.toc
 *.synctex.gz
+*.bbl
+*.blg

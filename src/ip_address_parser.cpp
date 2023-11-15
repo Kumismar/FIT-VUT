@@ -4,6 +4,12 @@
 
 #include "headers/ip_address_parser.hpp"
 #include "headers/constants.h"
+#include "headers/AllocList.hpp"
+
+IpAddressParser::IpAddressParser()
+{
+    AllocList.push_back(this);
+}
 
 int32_t IpAddressParser::parseIPAddress(std::string ipAddr)
 {
@@ -120,3 +126,4 @@ int32_t IpAddressParser::parseMask()
     }
     return SUCCESS;
 }
+

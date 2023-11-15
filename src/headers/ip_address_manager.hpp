@@ -2,11 +2,11 @@
 
 #include <vector>
 #include <string>
-#include <memory>
 #include <cstdint>
 #include "network_data.h"
+#include "ListInsertable.hpp"
 
-class IpAddressManager
+class IpAddressManager : public ListInsertable
 {
 private:
     /** Array of network data structs that hold information about each network. */
@@ -73,6 +73,11 @@ private:
     void setBroadcastAddress();
 
 public:
+
+    /**
+     * Inserts new object to AllocList.
+     */
+    IpAddressManager();
 
     /**
      * @brief Prints necessary information about networks.

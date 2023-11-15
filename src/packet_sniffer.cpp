@@ -9,16 +9,31 @@
 
 #include "headers/packet_sniffer.hpp"
 #include "headers/constants.h"
+#include "AllocList.hpp"
+
+PacketSniffer::PacketSniffer()
+{
+    AllocList.push_back(this);
+}
 
 PacketSniffer::~PacketSniffer()
 {
     delete[] this->interface;
     delete[] this->inputFileName;
+
+    if (this->isFilterProgramInitialized)
+    {
+        pcap_freecode(&this->filterProgram);
+    }
+    if (this->isHandleInitialized)
+    {
+        pcap_close(this->handle);
+    }
 }
 
 int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
 {
-    std::shared_ptr<IpAddressManager> manager = std::make_shared<IpAddressManager>();
+    IpAddressManager* manager = new IpAddressManager();
     manager->createNetworkData(addresses);
     while (true)
     {
@@ -39,7 +54,7 @@ int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
                 std::cerr << "Can't read DHCP_MESSAGE_TYPE_OPTION data; packet is too short." << std::endl;
                 return FAIL;
             }
-            this->processPacket(manager);
+            this->processPacket(*manager);
         }
         else if (retCode == CAPTURE_TIMEOUT)
         {
@@ -54,7 +69,7 @@ int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
     }
 }
 
-void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
+void PacketSniffer::processPacket(IpAddressManager& manager)
 {
     struct in_addr tmpAddress;
     char tmpAddressStr[INET_ADDRSTRLEN];
@@ -67,15 +82,15 @@ void PacketSniffer::processPacket(std::shared_ptr<IpAddressManager> manager)
     {
         memcpy(&tmpAddress, dhcpData + YIADDR_POSITION, sizeof(struct in_addr));
         inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
-        manager->processNewAddress(tmpAddress);
+        manager.processNewAddress(tmpAddress);
     }
     else if (messageType == DHCPRELEASE)
     {
         memcpy(&tmpAddress, dhcpData + CLIENT_IPADDR_POSITION, sizeof(struct in_addr));
         inet_ntop(AF_INET, &tmpAddress, tmpAddressStr, INET_ADDRSTRLEN);
-        manager->removeUsedIpAddr(tmpAddress);
+        manager.removeUsedIpAddr(tmpAddress);
     }
-    manager->printMembers();
+    manager.printMembers();
 //    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
@@ -104,15 +119,17 @@ int32_t PacketSniffer::setUpSniffing()
     if (this->interface != nullptr && this->inputFileName == nullptr)
     {
         this->handle = pcap_open_live(this->interface, BUFSIZ, PROMISC, TIMEOUT_MS, pcapErrBuff);
+        this->isHandleInitialized = true;
     }
     else
     {
         this->handle = pcap_open_offline(this->inputFileName, pcapErrBuff);
+        this->isHandleInitialized = true;
     }
 
     if (this->handle == nullptr)
     {
-        std::cerr << "Can't listen on interface: " << this->interface << ", additional info: " << pcapErrBuff << std::endl;
+        std::cerr << pcapErrBuff << std::endl;
         return FAIL;
     }
 
@@ -126,13 +143,8 @@ int32_t PacketSniffer::setUpSniffing()
         std::cerr << "pcap_setfilter() error:\n" << pcap_geterr(this->handle) << std::endl;
         return FAIL;
     }
+    this->isFilterProgramInitialized = true;
     return SUCCESS;
-}
-
-void PacketSniffer::cleanUp()
-{
-    pcap_freecode(&this->filterProgram);
-    pcap_close(this->handle);
 }
 
 u_char *PacketSniffer::skipToDHCPData()
@@ -159,5 +171,4 @@ u_char *PacketSniffer::skipToOptions(u_char *dhcpData)
 {
     return dhcpData + DHCP_OPTIONS_LOCATION;
 }
-
 

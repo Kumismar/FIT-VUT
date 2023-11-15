@@ -2,11 +2,12 @@
 
 #include <string>
 #include <vector>
+#include "ListInsertable.hpp"
 
 /**
  * @brief Class responsible for processing command-line arguments.
  */
-class ArgumentProcessor
+class ArgumentProcessor : public ListInsertable
 {
 private:
     /** Network interface that program will listen on if `-i` option is present. */
@@ -59,6 +60,11 @@ private:
 public:
 
     /**
+     * Inserts new object to AllocList.
+     */
+    ArgumentProcessor();
+
+    /**
      * @brief Destructor responsible for deallocating memory of fields that are c-style strings.
      */
     ~ArgumentProcessor();
@@ -99,5 +105,5 @@ public:
      *
      * @return Pointer to vector of IP prefixes.
      */
-    std::vector<std::string> getIpPrefixes();
+    std::vector<std::string>& getIpPrefixes();
 };

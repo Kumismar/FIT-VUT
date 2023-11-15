@@ -2,10 +2,12 @@
 
 #include <string>
 
+#include "ListInsertable.hpp"
+
 /**
  * @brief Is responsible for parsing IP addresses given as command-line arguments.
  */
-class IpAddressParser 
+class IpAddressParser : public ListInsertable
 {
 private:
     /** Auxiliary field for saving IP address tokens which are used in multiple methods. */
@@ -32,6 +34,11 @@ private:
     int32_t parseByte();
 
 public:
+
+    /**
+     * Inserts new object to AllocList.
+     */
+    IpAddressParser();
 
     /**
      * @brief Parses given ipAddr in x.x.x.x/y format (with mask).

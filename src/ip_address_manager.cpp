@@ -9,6 +9,12 @@
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
 #include "headers/network_data.h"
+#include "AllocList.hpp"
+
+IpAddressManager::IpAddressManager()
+{
+    AllocList.push_back(this);
+}
 
 void IpAddressManager::createNetworkData(std::vector<std::string>& addresses)
 {

@@ -1,17 +1,29 @@
 #include <iostream>
 #include <unistd.h>
-#include <sstream>
 #include <cstring>
-#include <memory>
 
 #include "headers/argument_processor.hpp"
 #include "headers/ip_address_parser.hpp"
 #include "headers/constants.h"
+#include "AllocList.hpp"
+
+
+ArgumentProcessor::ArgumentProcessor()
+{
+    AllocList.push_back(this);
+}
 
 ArgumentProcessor::~ArgumentProcessor()
 {
-    delete[] this->interface;
-    delete[] this->inputFileName;
+    if (this->interface != nullptr)
+    {
+        delete[] this->interface;
+    }
+
+    if (this->inputFileName != nullptr)
+    {
+        delete[] this->inputFileName;
+    }
 }
 
 void ArgumentProcessor::getFileNameFromArg()
@@ -66,10 +78,9 @@ int32_t ArgumentProcessor::processOptions(int32_t argc, char** argv)
     return SUCCESS;
 }
 
-
 int32_t ArgumentProcessor::processIpPrefixes(int32_t argc, char **argv)
 {
-    std::unique_ptr<IpAddressParser> parser = std::make_unique<IpAddressParser>();
+    IpAddressParser* parser = new IpAddressParser();
     for (int32_t i = optind; i < argc; i++)
     {
         std::string arg = std::string(argv[i]);
@@ -127,7 +138,9 @@ char* ArgumentProcessor::getFileName()
     return this->inputFileName;
 }
 
-std::vector<std::string> ArgumentProcessor::getIpPrefixes()
+std::vector<std::string>& ArgumentProcessor::getIpPrefixes()
 {
     return this->ipPrefixes;
 }
+
+

@@ -9,6 +9,11 @@ $(PROJ).ps: $(PROJ).dvi
 $(PROJ).dvi: $(PROJ).tex
 	latex $(PROJ).tex
 	latex $(PROJ).tex
+	make bibtex
+	
+bibtex: $(PROJ).bib
+	bibtex $(PROJ)
+
 pdflatex: $(PROJ).tex
 	pdflatex $(PROJ).tex
 	
