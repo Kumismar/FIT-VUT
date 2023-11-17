@@ -29,54 +29,54 @@ TEST(IpAddressParsing, BadSeparators)
 {
     IpAddressParser parser;
     std::string ipAddr = "111,111.111.111/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111.111.111/111/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111.111-111.111/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111=111.111/111/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111.111.111.111=24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111.111.111.111.24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
 }
 
 TEST(IpAddressParsing, BytesNotDivided)
 {
     IpAddressParser parser;
     std::string ipAddr = "123234.123.123/22";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111.111111.111/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "0.00.0/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "1010.111.123/24";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
 }
 
 TEST(IpAddressParsing, MaskNotDivided)
 {
     IpAddressParser parser;
     std::string ipAddr = "123.234.123.12322";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "255.255.123.2551";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "111.233.64.255";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);    
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "63.234.2.51";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
 }
 
 TEST(IpAddressParsing, InvalidMaskNumbers)
 {
     IpAddressParser parser;
     std::string ipAddr = "123.234.123.123/33";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "255.255.123.255/0";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "255.255.123.255/234";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
     ipAddr = "255.255.123.255/-800";
-    EXPECT_EQ(parser.parseIPAddress(ipAddr), FAIL);
+    EXPECT_EQ(parser.parseIPAddress(ipAddr), INVALID_CMDL_OPTIONS);
 }

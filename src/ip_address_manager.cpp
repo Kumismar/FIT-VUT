@@ -169,3 +169,7 @@ void IpAddressManager::setBroadcastAddress()
     lastNetwork.broadcast = lastNetwork.address | ~binaryMask;
 }
 
+std::vector<NetworkData> IpAddressManager::getData()
+{
+    return networks;
+}

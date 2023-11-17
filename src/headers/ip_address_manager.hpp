@@ -109,6 +109,8 @@ public:
      * @param clientAddress Client address from DHCPRELEASE packet.
      */
     void removeUsedIpAddr(struct in_addr& clientAddress);
+
+    std::vector<NetworkData> getData();
 };
 
 

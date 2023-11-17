@@ -41,6 +41,7 @@ target_link_libraries(
     testing    
     ${OBJS}
     pcap
+    ncurses
     GTest::gtest_main
 )
 

@@ -1,5 +1,7 @@
 #include "headers/AllocList.hpp"
 
+std::list<ListInsertable*> AllocList;
+
 void deleteAll()
 {
     for (auto it = AllocList.begin(); it != AllocList.end();)

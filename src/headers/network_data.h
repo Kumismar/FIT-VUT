@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include "constants.h"
+#include <arpa/inet.h>
 
 typedef struct networkData
 {

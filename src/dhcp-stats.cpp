@@ -7,8 +7,6 @@
 #include "headers/constants.h"
 #include "headers/AllocList.hpp"
 
-std::list<ListInsertable*> AllocList;
-
 void deleteAllAndExit(int32_t exitCode)
 {
     deleteAll();
