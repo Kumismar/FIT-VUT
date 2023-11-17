@@ -9,7 +9,7 @@
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
 #include "headers/network_data.h"
-#include "AllocList.hpp"
+#include "alloc_list.hpp"
 
 IpAddressManager::IpAddressManager()
 {
@@ -52,7 +52,7 @@ void IpAddressManager::setNetworkMask(std::string& mask)
     NetworkData& lastNetwork = this->networks.back();
     lastNetwork.decimalMask = decimalMask;
     lastNetwork.numberOfTakenAddresses = NO_ADDRESSES_TAKEN;
-    lastNetwork.maxHosts = totalAddressesAvailable;
+    lastNetwork.maxClients = totalAddressesAvailable;
 }
 
 void IpAddressManager::printMembers()
@@ -70,7 +70,7 @@ void IpAddressManager::printMembers()
         std::strcpy(ipPrefixForPrint, network.charAddress);
         std::strcat(ipPrefixForPrint, ('/' + std::to_string(network.decimalMask)).c_str());
         printw("%-15s %-12d %-20d %.2f%%\n",
-               ipPrefixForPrint, network.maxHosts, network.numberOfTakenAddresses, network.utilization
+               ipPrefixForPrint, network.maxClients, network.numberOfTakenAddresses, network.utilization
         );
     }
     refresh();
@@ -133,6 +133,7 @@ void IpAddressManager::updateUtilization(NetworkData &network)
     double networkRange = std::pow(2, MAX_MASK_NUMBER - network.decimalMask);
     float maxIpAddressesInNetwork = (float)(networkRange - NETWORK_AND_BROADCAST);
     network.utilization = (float)(network.numberOfTakenAddresses / maxIpAddressesInNetwork * CONVERT_TO_PERCENT);
+
     if (network.utilization >= HALF_NETWORK_FULL && !network.logFlag)
     {
         this->logUtilization(network);
@@ -149,7 +150,9 @@ void IpAddressManager::removeUsedIpAddr(struct in_addr &clientAddress)
     uint32_t addrToRemove = (uint32_t)(ntohl(clientAddress.s_addr));
     for (NetworkData& network : this->networks)
     {
-        for (std::vector<uint32_t>::iterator takenAddress = network.takenAddresses.begin(); takenAddress < network.takenAddresses.end(); takenAddress++)
+        for (auto takenAddress = network.takenAddresses.begin();
+                  takenAddress < network.takenAddresses.end();
+                  takenAddress++)
         {
             if (*takenAddress == addrToRemove)
             {

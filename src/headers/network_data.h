@@ -22,7 +22,7 @@ typedef struct networkData
     std::vector<uint32_t> takenAddresses;
 
     /** Maximum number of hosts for each IP address in this->networkAddresses. */
-    uint32_t maxHosts;
+    uint32_t maxClients;
 
     /** Auxiliary field used in a few methods, serves as string for temporary IP addresses. */
     float utilization = NO_UTILIZATION;

@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdint>
 #include "network_data.h"
-#include "ListInsertable.hpp"
+#include "list_insertable.hpp"
 
 class IpAddressManager : public ListInsertable
 {
@@ -24,7 +24,7 @@ private:
     /**
      * @brief Sets mask and other related fields to default for newly created network.
      *
-     * Related fields are numberOfTakenAddresses and maxHosts, which can be calculated directly from mask number.
+     * Related fields are numberOfTakenAddresses and maxClients, which can be calculated directly from mask number.
      *
      * @param mask Mask to be set.
      */
