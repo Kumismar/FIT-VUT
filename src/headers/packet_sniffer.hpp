@@ -20,10 +20,14 @@ private:
 
     /** Sniffing session handler. */
     pcap_t* handle;
+
+    /** Auxiliary field for correct memory deallocation in destructor. Prevents memory leaks. */
     bool isHandleInitialized = false;
 
     /** Structure representing instructions processing packets. */
     struct bpf_program filterProgram;
+
+    /** Auxiliary field for correct memory deallocation in destructor. Prevents memory leaks. */
     bool isFilterProgramInitialized = false;
 
     /** Header of captured packets. */

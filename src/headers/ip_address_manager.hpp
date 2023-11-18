@@ -110,6 +110,12 @@ public:
      */
     void removeUsedIpAddr(struct in_addr& clientAddress);
 
+    /**
+     * @brief Get information of all the networks.
+     * Used for unit tests only.
+     * 
+     * @return std::vector<NetworkData> 
+     */
     std::vector<NetworkData> getData();
 };
 

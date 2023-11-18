@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "../src/headers/AllocList.hpp"
+#include "../src/headers/alloc_list.hpp"
 #include "../src/headers/argument_processor.hpp"
 #include "../src/headers/ip_address_manager.hpp"
 #include "../src/headers/ip_address_parser.hpp"
 #include "../src/headers/packet_sniffer.hpp"
-#include "../src/headers/ListInsertable.hpp"
+#include "../src/headers/list_insertable.hpp"
 #include "../src/headers/network_data.h"
 
 TEST(AllocListTests, AddObject)

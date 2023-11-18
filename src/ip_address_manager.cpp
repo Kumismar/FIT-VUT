@@ -125,7 +125,7 @@ void IpAddressManager::logUtilization(NetworkData &network)
     openlog("dhcp-stats", LOG_PID, LOG_USER);
     syslog(LOG_INFO, "prefix %s exceeded 50%% of allocations.\n", strAddr);
     closelog();
-    std::cout << "prefix " << strAddr << " exceeded 50%% of allocations." << std::endl;
+    std::cout << "prefix " << strAddr << " exceeded 50% of allocations." << std::endl;
 }
 
 void IpAddressManager::updateUtilization(NetworkData &network)

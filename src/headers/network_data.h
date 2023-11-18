@@ -6,28 +6,31 @@
 
 typedef struct networkData
 {
-    /** Vector of IP Addresses given to program as command-line arguments. */
+    /** IP address in binary form. */
     uint32_t address;
 
-    /** Vector of masks given to program as part of IP address as command-line arguments. */
+    /** Network mask in decimal form. */
     uint32_t decimalMask;
 
-    /** Broadcast address of network. */
+    /** Broadcast address in binary form. */
     uint32_t broadcast;
 
-    /** Numbers on index belong to this->networkAddresses[theSameIndex] and the count itself is equal to this->takenAddresses[theSameIndex].size(). */
+    /** Number of clients that have IP address allocated in network. */
     uint32_t numberOfTakenAddresses;
 
-    /** Array of address arrays, each array contains addresses belonging to this->networkAddresses on the same index. */
+    /** Vector of allocated IP addresses. */
     std::vector<uint32_t> takenAddresses;
 
-    /** Maximum number of hosts for each IP address in this->networkAddresses. */
+    /** Maximum number of clients that can have IP address allocated. */
     uint32_t maxClients;
 
-    /** Auxiliary field used in a few methods, serves as string for temporary IP addresses. */
+    /** Utilization of network in percents. */
     float utilization = NO_UTILIZATION;
 
-    /** Network utilization of each IP address in this->networkAddresses, expressed with percentage. */
+    /**
+     *  A flag that tells IpAddressManager whether allocation info has already been printed. 
+     *  Is reset when allocation drops below 50%.
+     */
     bool logFlag = false;
 
     /** Network address as c-style string. */

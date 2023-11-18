@@ -20,16 +20,14 @@ test:
 	@cd tests && [ -d build/ ] || mkdir build/ && cd build/ && cmake .. && make -s
 
 runtest: 
+	@[ -f $(TESTDIR)/build/testing ] || echo "The testing executable doesn't exist. You can create it by running 'make test'.\n"
 	./$(TESTDIR)/build/testing
 
-docs:
-	doxygen Doxyfile
-
 clean:
-	@rm -rvf $(BUILD) $(EXECUTABLE) $(TESTDIR)/build valgrind.txt juju
+	@rm -rvf $(BUILD) $(EXECUTABLE) $(TESTDIR)/build valgrind.txt
 
 valgrind: 
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --log-file=valgrind.txt ./$(EXECUTABLE) $(CMDL_ARGS)
 
 man:
-	man -l dhcp-stats.1
+	man -l docs/dhcp-stats.1
