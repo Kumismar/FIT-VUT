@@ -19,7 +19,7 @@ private:
      * Reads mask from this->token.
      *
      * @return SUCCESS (0) when mask is within range.
-     * @return FAIL (-1) when mask is not within range.
+     * @return FAILURE (-1) when mask is not within range.
      */
     int32_t parseMask();
 
@@ -29,7 +29,7 @@ private:
      * Reads the byte from this->token.
      *
      * @return SUCCESS (0) when byte is within range.
-     * @return FAIL (-1) when byte is not within range.
+     * @return FAILURE (-1) when byte is not within range.
      */
     int32_t parseByte();
 
@@ -44,7 +44,7 @@ public:
      * @brief Parses given ipAddr in x.x.x.x/y format (with mask).
      * @param ipAddr IP Address with mask.
      * @return SUCCESS (0) on successful parsing
-     * @return FAIL (-1) when ipAddr is in incorrect format.
+     * @return FAILURE (-1) when ipAddr is in incorrect format.
      */
     int32_t parseIPAddress(std::string ipAddr);
 };

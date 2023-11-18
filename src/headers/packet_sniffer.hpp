@@ -89,7 +89,7 @@ public:
     /**
      * @brief Sets up sniffing session handler, compiles filter and prepares filtering program instructions.
      * @return SUCCESS (0) if everything runs smoothly
-     * @return FAIL (-1) when an error occurs
+     * @return FAILURE (-1) when an error occurs
      */
     int32_t setUpSniffing();
 
@@ -98,7 +98,7 @@ public:
      * @param addresses Addresses given to program as command-line arguments,
      * are further passed to IP Address Manager.
      * @return SUCCESS (0) when a packet has been read successfully
-     * @return FAIL (-1) on error when reading packet.
+     * @return FAILURE (-1) on error when reading packet.
      */
     int32_t sniffPackets(std::vector<std::string>& addresses);
 };

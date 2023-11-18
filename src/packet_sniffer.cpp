@@ -45,26 +45,26 @@ int32_t PacketSniffer::sniffPackets(std::vector<std::string>& addresses)
         else if (retCode == PCAP_ERROR)
         {
             std::cerr << pcap_geterr(this->handle) << std::endl;
-            return FAIL;
+            return FAILURE;
         }
         else if (retCode == PACKET_SUCCESSFULLY_READ)
         {
             if (this->packetHeader->caplen < DHCP_TYPE_LOCATION)
             {
                 std::cerr << "Can't read DHCP_MESSAGE_TYPE_OPTION data; packet is too short." << std::endl;
-                return FAIL;
+                return FAILURE;
             }
             this->processPacket(*manager);
         }
         else if (retCode == CAPTURE_TIMEOUT)
         {
             std::cerr << "Live capture buffer timeout" << std::endl;
-            return FAIL;
+            return FAILURE;
         }
         else
         {
             std::cerr << pcap_geterr(this->handle) << std::endl;
-            return FAIL;
+            return FAILURE;
         }
     }
 }
@@ -128,19 +128,19 @@ int32_t PacketSniffer::setUpSniffing()
     if (this->handle == nullptr)
     {
         std::cerr << pcapErrBuff << std::endl;
-        return FAIL;
+        return FAILURE;
     }
     this->isHandleInitialized = true;
 
     if (pcap_compile(this->handle, &this->filterProgram, filter, NO_OPTIMIZATION, PCAP_NETMASK_UNKNOWN) == PCAP_ERROR)
     {
         std::cerr << "pcap_compile() error:\n" << pcap_geterr(this->handle) << std::endl;
-        return FAIL;
+        return FAILURE;
     }
     if (pcap_setfilter(this->handle, &this->filterProgram) == PCAP_ERROR)
     {
         std::cerr << "pcap_setfilter() error:\n" << pcap_geterr(this->handle) << std::endl;
-        return FAIL;
+        return FAILURE;
     }
     this->isFilterProgramInitialized = true;
     return SUCCESS;

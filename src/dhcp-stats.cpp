@@ -45,7 +45,7 @@ int main(int argc, char** argv)
     ps->setInterface(ap->getInterface());
     ps->setInputFile(ap->getFileName());
     retCode = ps->setUpSniffing();
-    if (retCode == FAIL) 
+    if (retCode == FAILURE)
     {
         deleteAllAndExit(EXIT_FAILURE);
     }
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     initscr();
     std::vector<std::string> ipAddresses = ap->getIpPrefixes(); 
     retCode = ps->sniffPackets(ipAddresses);
-    if (retCode == FAIL)
+    if (retCode == FAILURE)
     {
         endwin();
         deleteAllAndExit(EXIT_FAILURE);
