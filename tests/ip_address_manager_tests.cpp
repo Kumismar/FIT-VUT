@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "../src/headers/ip_address_manager.hpp"
-#include "../src/headers/network_data.h"
+#include "../src/headers/network_data.hpp"
 
 class IpAddressManagerTest : public ::testing::Test 
 {

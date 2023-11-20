@@ -6,7 +6,7 @@
 #include "../src/headers/ip_address_parser.hpp"
 #include "../src/headers/packet_sniffer.hpp"
 #include "../src/headers/list_insertable.hpp"
-#include "../src/headers/network_data.h"
+#include "../src/headers/network_data.hpp"
 
 TEST(AllocListTests, AddObject)
 {

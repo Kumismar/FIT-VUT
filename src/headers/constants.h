@@ -1,3 +1,8 @@
+/**
+ * @file constants.h
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #pragma once
 
 /* argument_processor constants */

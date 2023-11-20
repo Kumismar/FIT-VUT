@@ -1,3 +1,8 @@
+/**
+ * @file dhcp-stats.cpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #include <ncurses.h>
 #include <csignal>
 #include <iostream>

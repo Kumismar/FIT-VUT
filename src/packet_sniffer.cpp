@@ -1,3 +1,8 @@
+/**
+ * @file packet_sniffer.cpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #include <cstring>
 #include <iostream>
 #include <net/ethernet.h>
@@ -91,7 +96,8 @@ void PacketSniffer::processPacket(IpAddressManager& manager)
         manager.removeUsedIpAddr(tmpAddress);
     }
     manager.printMembers();
-//    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    // Uncomment next line if you want to watch processing addresses in pcap files one by one
+    // std::this_thread::sleep_for(std::chrono::milliseconds(200));
 }
 
 void PacketSniffer::setInputFile(char* fileName)
@@ -115,6 +121,7 @@ void PacketSniffer::setInterface(char* dev)
 int32_t PacketSniffer::setUpSniffing()
 {
     char pcapErrBuff[PCAP_ERRBUF_SIZE];
+    // Sniff on port 68 (client port) because of DHCPDECLINE message
     char filter[] = "udp port 67 or udp port 68";
     if (this->interface != nullptr && this->inputFileName == nullptr)
     {
@@ -160,6 +167,7 @@ u_char PacketSniffer::findDHCPMessageType(u_char *options)
     while(options[i] != DHCP_MESSAGE_TYPE_OPTION && options[i] != PACKET_END_OPTION)
     {
         uint32_t optionLengthLocation = i + 1;
+        // Every option has length and data field, so we just skip option[length] + 2 bytes for data and length
         i += options[optionLengthLocation] + SKIP_OPTIONCODE_AND_LENGTH;
     }
     uint32_t optionData = i + 2;
@@ -168,6 +176,7 @@ u_char PacketSniffer::findDHCPMessageType(u_char *options)
 
 u_char *PacketSniffer::skipToOptions(u_char *dhcpData)
 {
+    // Skips dhcp data and magic cookie
     return dhcpData + DHCP_OPTIONS_LOCATION;
 }
 

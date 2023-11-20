@@ -1,3 +1,8 @@
+/**
+ * @file ip_address_manager.cpp 
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #include <iostream>
 #include <arpa/inet.h>
 #include <cstring>
@@ -8,7 +13,7 @@
 
 #include "headers/ip_address_manager.hpp"
 #include "headers/constants.h"
-#include "headers/network_data.h"
+#include "headers/network_data.hpp"
 #include "alloc_list.hpp"
 
 IpAddressManager::IpAddressManager()
@@ -18,6 +23,7 @@ IpAddressManager::IpAddressManager()
 
 void IpAddressManager::createNetworkData(std::vector<std::string>& addresses)
 {
+    // For each IP prefix create NetworkData struct and fill the basic fields
     for (std::string& ipAddress : addresses)
     {
         size_t separatorPosition = ipAddress.find('/');
@@ -105,7 +111,9 @@ bool IpAddressManager::belongsToNetwork(uint32_t clientAddress, NetworkData& net
 
 bool IpAddressManager::isTaken(uint32_t clientAddress, NetworkData &network)
 {
-    for (std::vector<uint32_t>::iterator takenAddress = network.takenAddresses.begin(); takenAddress < network.takenAddresses.end(); takenAddress++)
+    for (auto takenAddress = network.takenAddresses.begin(); 
+              takenAddress < network.takenAddresses.end(); 
+              takenAddress++)
     {
         if (*takenAddress == clientAddress)
         {
@@ -119,9 +127,9 @@ bool IpAddressManager::isTaken(uint32_t clientAddress, NetworkData &network)
 void IpAddressManager::logUtilization(NetworkData &network)
 {
     char strAddr[INET_ADDRSTRLEN + MASK_LENGTH];
-
     std::strcpy(strAddr, network.charAddress);
     std::strcat(strAddr, ('/' + std::to_string(network.decimalMask)).c_str());
+
     openlog("dhcp-stats", LOG_PID, LOG_USER);
     syslog(LOG_INFO, "prefix %s exceeded 50%% of allocations.\n", strAddr);
     closelog();
@@ -130,9 +138,7 @@ void IpAddressManager::logUtilization(NetworkData &network)
 
 void IpAddressManager::updateUtilization(NetworkData &network)
 {
-    double networkRange = std::pow(2, MAX_MASK_NUMBER - network.decimalMask);
-    float maxIpAddressesInNetwork = (float)(networkRange - NETWORK_AND_BROADCAST);
-    network.utilization = (float)(network.numberOfTakenAddresses / maxIpAddressesInNetwork * CONVERT_TO_PERCENT);
+    network.utilization = (float)(network.numberOfTakenAddresses / (float)(network.maxClients) * CONVERT_TO_PERCENT);
 
     if (network.utilization >= HALF_NETWORK_FULL && !network.logFlag)
     {
@@ -167,6 +173,7 @@ void IpAddressManager::removeUsedIpAddr(struct in_addr &clientAddress)
 
 void IpAddressManager::setBroadcastAddress()
 {
+    // foreach bit in address, if mask is 1, dont change; if mask is 0, set address bit to 1
     NetworkData& lastNetwork = this->networks.back();
     uint32_t binaryMask = 0xFFFFFFFF << (MAX_MASK_NUMBER - lastNetwork.decimalMask);
     lastNetwork.broadcast = lastNetwork.address | ~binaryMask;

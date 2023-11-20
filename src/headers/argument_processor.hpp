@@ -1,3 +1,8 @@
+/**
+ * @file argument_processor.hpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #pragma once
 
 #include <string>

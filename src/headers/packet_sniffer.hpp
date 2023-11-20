@@ -1,3 +1,8 @@
+/**
+ * @file packet_sniffer.hpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #pragma once
 
 #include <pcap.h>

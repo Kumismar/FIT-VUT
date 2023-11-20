@@ -1,9 +1,14 @@
+/**
+ * @file ip_address_manager.hpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #pragma once
 
 #include <vector>
 #include <string>
 #include <cstdint>
-#include "network_data.h"
+#include "network_data.hpp"
 #include "list_insertable.hpp"
 
 class IpAddressManager : public ListInsertable

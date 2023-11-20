@@ -1,3 +1,8 @@
+/**
+ * @file alloc_list.hpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #pragma once
 
 #include <list>

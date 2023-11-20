@@ -1,3 +1,8 @@
+/**
+ * @file argument_processor.cpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #include <iostream>
 #include <unistd.h>
 #include <cstring>
@@ -108,6 +113,7 @@ int32_t ArgumentProcessor::processArguments(int32_t argc, char** argv)
         return retCode;
     }
 
+    // Program only supports online xor offline sniffing
     if (this->inputFileName == nullptr && this->interface == nullptr)
     {
         std::cerr << "Neither interface to listen on nor offline pcap files were provided." << std::endl;

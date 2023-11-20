@@ -1,3 +1,8 @@
+/**
+ * @file ip_address_parser.cpp
+ * @author Ondřej Koumar (xkouma02@stud.fit.vutbr.cz)
+ */
+
 #include <iostream>
 #include <sstream>
 #include <cstdint>
