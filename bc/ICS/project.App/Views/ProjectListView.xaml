@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<views:ContentPageBase 
+    x:Class="project.App.Views.ProjectListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    xmlns:model="clr-namespace:project.BL.Models;assembly=project.BL"
+    Title="ProjectListView"
+    x:DataType="viewmodels:ProjectListViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="False"
+    x:Name="ProjectListViewRoot">
+    <ScrollView>
+        <StackLayout>
+            <Label
+                Margin="30"
+                FontSize="48"
+                HorizontalOptions="Center"
+                MinimumWidthRequest="200"
+                Text="Projects"/>
+            
+            <Button
+                Margin="30"
+                BackgroundColor="{StaticResource OxfordBlue}"
+                BorderColor="{StaticResource RichBlack}"
+                HorizontalOptions="Center"
+                WidthRequest="120"
+                HeightRequest="60"
+                Text="Create project"
+                Command="{Binding GoToAddProjectCommand}"/>
+            
+            <CollectionView
+                EmptyView="No projects assigned yet"
+                HorizontalOptions="Center"
+                MinimumWidthRequest="460"
+                ItemsSource="{Binding Projects}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:ProjectListModel">
+                        <Frame
+                            Margin="3"
+                            BorderColor="{StaticResource Platinum}"
+                            BackgroundColor="{StaticResource YlmNmBlue}"
+                            Padding="10">
+                            <HorizontalStackLayout>
+                                <Button
+                                    MinimumWidthRequest="460"
+                                    HeightRequest="35"
+                                    Text="{Binding Name}"
+                                    Command="{Binding Source={x:Reference ProjectListViewRoot}, Path=BindingContext.GoToDetailProjectCommand}"/>
+                            </HorizontalStackLayout>
+                        </Frame>
+                    </DataTemplate>        
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </StackLayout>
+    </ScrollView>
+</views:ContentPageBase>

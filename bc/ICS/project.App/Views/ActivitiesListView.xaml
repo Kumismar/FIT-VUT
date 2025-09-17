@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.ActivitiesListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:project.BL.Models;assembly=project.BL"
+    xmlns:viewmodels="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    xmlns:converters="clr-namespace:project.App.Converters"
+    x:Name="ActivitiesListViewRoot"
+    Title="ActivitiesListView"
+    x:DataType="viewmodels:ActivitiesListViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="False">
+    <ScrollView>
+        <Grid
+            Padding="15"
+            ColumnDefinitions="*, *"
+            ColumnSpacing="20"
+            RowDefinitions="100,100,*">
+            <Label
+                Grid.Row="0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                FontSize="48"
+                HorizontalOptions="Center"
+                MinimumWidthRequest="200"
+                Text="Activities"
+                VerticalOptions="Center" />
+            <Frame
+                Grid.Row="1"
+                Grid.Column="0"
+                BackgroundColor="Transparent"
+                BorderColor="{StaticResource OxfordBlue}"
+                HorizontalOptions="End"
+                WidthRequest="460">
+                <HorizontalStackLayout>
+                    <Label
+                        Margin="0,0,10,0"
+                        Text="Choose a filter:"
+                        VerticalOptions="Center" />
+                    <Picker
+                        SelectedIndex="{Binding SortType}"
+                        VerticalOptions="Center"
+                        WidthRequest="150">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>None</x:String>
+                                <x:String>Last Week</x:String>
+                                <x:String>Last Month</x:String>
+                                <x:String>Previous Month</x:String>
+                                <x:String>Last Year</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                    <Button
+                        Margin="95,0,0,0"
+                        Command="{Binding SortActivitiesCommand}"
+                        HeightRequest="80"
+                        Text="Apply"
+                        WidthRequest="80" />
+                </HorizontalStackLayout>
+            </Frame>
+            <CollectionView
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalOptions="End"
+                ItemsSource="{Binding Activities}"
+                WidthRequest="460">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:ActivityDetailModel">
+                        <Frame
+                            Margin="0,10"
+                            Padding="0"
+                            BackgroundColor="Transparent"
+                            BorderColor="{StaticResource OxfordBlue}"
+                            HeightRequest="120"
+                            HorizontalOptions="Start">
+                            <VerticalStackLayout>
+                                <Button
+                                    BackgroundColor="{Binding Color, Converter={converters:ActivityColorConverter}}"
+                                    Command="{Binding Source={x:Reference ActivitiesListViewRoot}, Path=BindingContext.GoToActivityDetailViewCommand}"
+                                    CommandParameter="{Binding Id}"
+                                    FontSize="18"
+                                    Text="{Binding Name}" />
+                                <VerticalStackLayout>
+                                    <HorizontalStackLayout Padding="5">
+                                        <Label
+                                            FontSize="16"
+                                            Text="From: "
+                                            TextColor="{StaticResource Platinum}" />
+                                        <Label
+                                            FontSize="16"
+                                            Text="{Binding DateTimeFrom}"
+                                            TextColor="{StaticResource Platinum}" />
+                                    </HorizontalStackLayout>
+                                    <HorizontalStackLayout Padding="5">
+                                        <Label
+                                            FontSize="16"
+                                            Text="To: "
+                                            TextColor="{StaticResource Platinum}" />
+                                        <Label
+                                            FontSize="16"
+                                            Text="{Binding DateTimeTo}"
+                                            TextColor="{StaticResource Platinum}" />
+                                    </HorizontalStackLayout>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <ContentView>
+                        <StackLayout Margin="0,10">
+                            <Frame>
+                                <Label
+                                    FontSize="18"
+                                    HorizontalOptions="Center"
+                                    Text="No activities to display"
+                                    TextColor="Red" />
+                            </Frame>
+                        </StackLayout>
+                    </ContentView>
+                </CollectionView.EmptyView>
+            </CollectionView>
+
+            <VerticalStackLayout
+                Grid.Row="1"
+                Grid.RowSpan="2"
+                Grid.Column="1"
+                HorizontalOptions="Start"
+                Spacing="20"
+                VerticalOptions="Start">
+                <Button
+                    Command="{Binding GoToAddActivityCommand}"
+                    FontSize="20"
+                    HeightRequest="100"
+                    Text="ADD"
+                    WidthRequest="150" />
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
+</views:ContentPageBase>

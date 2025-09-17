@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="project.App.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodels="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    x:Name="AppShellRoot"
+    Shell.FlyoutBehavior="Disabled">
+
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout Padding="10" BackgroundColor="{StaticResource OxfordBlue}">
+            <Label
+                FontSize="36"
+                HorizontalOptions="Center"
+                Text="MENU"
+                TextColor="{StaticResource Platinum}" />
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+    <Shell.FlyoutContent>
+        <VerticalStackLayout Padding="15" BackgroundColor="{StaticResource YlmNmBlue}">
+            <Button
+                Style="{StaticResource FlyoutItem}"
+                Text="Activities" />
+            <Button Style="{StaticResource FlyoutItem}" Text="Projects" />
+            <Button
+                Style="{StaticResource FlyoutItem}"
+                Text="TODO" />
+        </VerticalStackLayout>
+    </Shell.FlyoutContent>
+    <Shell.FlyoutFooter>
+        <HorizontalStackLayout Padding="10" BackgroundColor="{StaticResource OxfordBlue}">
+            <Image>
+                <Image.Source>
+                    <FontImageSource
+                        FontFamily="FAS"
+                        Glyph="{StaticResource User}"
+                        Size="42" />
+                </Image.Source>
+            </Image>
+            <Label
+                Margin="10"
+                FontSize="20"
+                Text="Username"
+                TextColor="{StaticResource Platinum}"
+                VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </Shell.FlyoutFooter>
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate views:MainView}"
+        Route="MainView" />
+    <ShellContent
+        Title="UserActivities"
+        ContentTemplate="{DataTemplate views:ActivitiesListView}"
+        Route="main/activities/userActivities" />
+
+</Shell>

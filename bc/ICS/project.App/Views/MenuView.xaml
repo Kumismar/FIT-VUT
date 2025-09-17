@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.MenuView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:models="clr-namespace:project.BL.Models;assembly=project.BL"
+    xmlns:viewmodels="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    Title="ActivitiesPage"
+    x:DataType="viewmodels:MenuViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="false">
+
+
+    <VerticalStackLayout Margin="0,40" Spacing="200">
+
+        <HorizontalStackLayout
+            HorizontalOptions="Center"
+            Spacing="5"
+            VerticalOptions="Center">
+            <Label FontSize="48" Text="Hello" />
+        </HorizontalStackLayout>
+        <HorizontalStackLayout HorizontalOptions="Center">
+            <Button
+                Command="{Binding GoToActivitiesListCommand}"
+                Style="{StaticResource NavigationButton}"
+                Text="Activities" />
+            <Button
+                Command="{Binding GoToProjectListCommand}"
+                Style="{StaticResource NavigationButton}"
+                Text="Projects" />
+            <Button
+                Command="{Binding GoToTodoListCommand}"
+                Style="{StaticResource NavigationButton}"
+                Text="TODO" />
+            <Button
+                BackgroundColor="{StaticResource Madder-Red}"
+                Style="{StaticResource NavigationButton}"
+                Command="{Binding DeleteUserCommand}"
+                Text="DELETE" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</views:ContentPageBase>

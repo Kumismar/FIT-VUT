@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.AddProjectView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    Title="AddProjectView"
+    x:DataType="viewmodel:AddProjectViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="False">
+    <VerticalStackLayout 
+        Padding="15" 
+        WidthRequest="600">
+        <Label
+            Padding="30"
+            FontSize="36"
+            HorizontalOptions="Center"
+            Text="New Project"
+            VerticalOptions="Center" />
+        <Frame
+            BackgroundColor="Transparent"
+            BorderColor="{StaticResource OxfordBlue}"
+            HeightRequest="350">
+            <StackLayout>
+                <Button
+                    WidthRequest="150"
+                    Text="Create"
+                    Command="{Binding SaveProjectCommand}"/>
+                <Entry
+                    Margin="20"
+                    HeightRequest="40"
+                    WidthRequest="300"
+                    HorizontalOptions="Center"
+                    Placeholder="Project name"
+                    Text="{Binding Project.Name}"/>
+                <Entry
+                    HeightRequest="150"
+                    WidthRequest="300"
+                    HorizontalOptions="Center"
+                    Placeholder="Project description"
+                    Text="{Binding Project.Description}"/>
+            </StackLayout>
+        </Frame>
+    </VerticalStackLayout>
+</views:ContentPageBase>

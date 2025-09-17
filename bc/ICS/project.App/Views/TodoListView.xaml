@@ -1,0 +1,116 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.TodoListView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:model="clr-namespace:project.BL.Models;assembly=project.BL"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:viewmodels="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    x:Name="TodoListViewRoot"
+    Title="TodoListView"
+    x:DataType="viewmodels:TodoListViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="False">
+
+    <ContentPage.Resources>
+        <x:String x:Key="Delete">&#xf2ed;</x:String>
+    </ContentPage.Resources>
+    <ScrollView>
+        <Grid
+            Padding="15"
+            ColumnDefinitions="*"
+            RowDefinitions="100,50,*"
+            RowSpacing="20">
+            <Label
+                Grid.Row="0"
+                Grid.Column="0"
+                FontSize="48"
+                HorizontalOptions="Center"
+                MinimumHeightRequest="200"
+                Text="Todos"
+                VerticalOptions="Center" />
+
+            <Button
+                Grid.Row="1"
+                Grid.Column="0"
+                Command="{Binding GoToAddTodoCommand}"
+                HeightRequest="50"
+                HorizontalOptions="Center"
+                Text="Add"
+                VerticalOptions="Start"
+                WidthRequest="150" />
+
+            <CollectionView
+                Grid.Row="2"
+                Grid.Column="0"
+                HorizontalOptions="Center"
+                ItemsSource="{Binding Todos}"
+                MinimumWidthRequest="460"
+                VerticalOptions="Start">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:TodoDetailModel">
+                        <Frame Margin="0,10">
+                            <Grid ColumnDefinitions="50,200,150,100" HeightRequest="50">
+                                <CheckBox
+                                    x:Name="Task"
+                                    Grid.Column="0"
+                                    IsChecked="{Binding Finished}"
+                                    Scale="2"
+                                    VerticalOptions="Center">
+                                    <CheckBox.Behaviors>
+                                        <toolkit:EventToCommandBehavior
+                                            x:DataType="viewmodels:TodoListViewModel"
+                                            Command="{Binding Source={x:Reference TodoListViewRoot}, Path=BindingContext.SaveAllTodosCommand}"
+                                            EventName="CheckedChanged" />
+                                    </CheckBox.Behaviors>
+                                </CheckBox>
+                                <Button
+                                    Grid.Column="1"
+                                    BackgroundColor="{StaticResource YlmNmBlue}"
+                                    MinimumWidthRequest="100"
+                                    Text="{Binding Name}"
+                                    TextColor="{StaticResource Platinum}" />
+                                <Label
+                                    Grid.Column="2"
+                                    HorizontalOptions="Center"
+                                    Text="{Binding Date}"
+                                    VerticalOptions="Center" />
+                                <ImageButton
+                                    Grid.Column="3"
+                                    Padding="5"
+                                    BackgroundColor="{StaticResource Platinum}"
+                                    Command="{Binding Source={x:Reference TodoListViewRoot}, Path=BindingContext.DeleteTodoCommand}"
+                                    CommandParameter="{Binding Id}"
+                                    HeightRequest="70"
+                                    HorizontalOptions="End"
+                                    WidthRequest="70">
+                                    <ImageButton.Source>
+                                        <FontImageSource
+                                            FontFamily="FAS"
+                                            Glyph="{StaticResource Delete}"
+                                            Size="35"
+                                            Color="{StaticResource Madder-Red}" />
+                                    </ImageButton.Source>
+                                </ImageButton>
+                            </Grid>
+                        </Frame>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <ContentView>
+                        <StackLayout Margin="0,10">
+                            <Frame>
+                                <Label
+                                    FontSize="19"
+                                    HorizontalOptions="Center"
+                                    Text="You have nothing TO DO"
+                                    TextColor="{StaticResource Madder-Red}" />
+                            </Frame>
+                        </StackLayout>
+                    </ContentView>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </Grid>
+    </ScrollView>
+</views:ContentPageBase>

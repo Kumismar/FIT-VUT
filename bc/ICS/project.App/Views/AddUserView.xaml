@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.AddUserView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:behaviors="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    xmlns:models="clr-namespace:project.BL.Models;assembly=project.BL"
+    xmlns:viewmodels="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    Title="AddUser"
+    x:DataType="viewmodels:AddUserViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.FlyoutBehavior="Disabled"
+    Shell.NavBarIsVisible="false">
+
+    <VerticalStackLayout
+        Padding="25,50"
+        MaximumWidthRequest="600"
+        MinimumWidthRequest="350">
+        <Label
+            Padding="0,0,0,20"
+            FontSize="48"
+            HorizontalOptions="Center"
+            Text="New User"
+            VerticalOptions="Center" />
+
+        <Label Padding="0,20,0,0" Text="FULLNAME" />
+        <Entry
+            MaxLength="30"
+            Placeholder="Holden Ford"
+            Text="{Binding User.FullName}" />
+        <Label Padding="0,20,0,0" Text="USERNAME" />
+        <Entry
+            MaxLength="15"
+            Placeholder="MindHunter"
+            Text="{Binding User.UserName}">
+            <Entry.Behaviors>
+                <behaviors:TextValidationBehavior
+                    Flags="ValidateOnValueChanged"
+                    InvalidStyle="{StaticResource InvalidEntry}"
+                    MaximumLength="15"
+                    MinimumLength="4"
+                    ValidStyle="{StaticResource ValidEntry}" />
+            </Entry.Behaviors>
+        </Entry>
+        <Label Padding="0,20,0,0" Text="IMAGE" />
+        <Entry Text="{Binding User.ImageUrl}" />
+
+        <Grid
+            Margin="0,20,0,0"
+            ColumnDefinitions="100,100"
+            ColumnSpacing="100"
+            HorizontalOptions="Center"
+            MaximumWidthRequest="600">
+
+            <Image
+                Grid.Column="0"
+                BackgroundColor="{StaticResource OxfordBlue}"
+                HeightRequest="100"
+                WidthRequest="100">
+                <Image.Source>
+                    <Binding Path="User.ImageUrl">
+                        <Binding.TargetNullValue>
+                            <FontImageSource
+                                FontFamily="FAS"
+                                Glyph="{StaticResource User}"
+                                Size="100" />
+                        </Binding.TargetNullValue>
+                    </Binding>
+                </Image.Source>
+            </Image>
+            <Button
+                Grid.Column="1"
+                BackgroundColor="{StaticResource YlmNmBlue}"
+                BorderColor="{StaticResource OxfordBlue}"
+                BorderWidth="3"
+                Command="{Binding SaveUserCommand}"
+                FontAttributes="Bold"
+                HeightRequest="100"
+                Text="ADD"
+                WidthRequest="100" />
+        </Grid>
+    </VerticalStackLayout>
+</views:ContentPageBase>

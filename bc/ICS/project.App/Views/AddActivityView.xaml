@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.AddActivityView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    Title="AddActivityView"
+    x:DataType="viewmodel:AddActivityViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="False">
+    <ScrollView>
+        <VerticalStackLayout Padding="15" WidthRequest="600">
+            <Label
+                Padding="30"
+                FontSize="36"
+                HorizontalOptions="Center"
+                Text="New Activity"
+                VerticalOptions="Center" />
+            <Frame
+                BackgroundColor="Transparent"
+                BorderColor="{StaticResource OxfordBlue}"
+                HeightRequest="350">
+                <StackLayout>
+                    <Entry
+                        HeightRequest="60"
+                        HorizontalOptions="Start"
+                        Placeholder="Activity Name"
+                        Text="{Binding ActivityDetailModel.Name}"
+                        WidthRequest="300" />
+                    <Entry
+                        HeightRequest="60"
+                        HorizontalOptions="Start"
+                        Placeholder="Description"
+                        Text="{Binding ActivityDetailModel.Description}"
+                        WidthRequest="300" />
+                    <Grid ColumnDefinitions="60,100" RowDefinitions="50,50">
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            FontSize="18"
+                            Text="From:"
+                            VerticalOptions="Center" />
+                        <HorizontalStackLayout
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            HorizontalOptions="End">
+                            <DatePicker MinimumDate="{Binding LastYear}"
+                                        MaximumDate="{Binding NextYear}"
+                                        Date="{Binding Today}"/>
+                            <TimePicker Time="{Binding TimeFrom}"
+                                        />
+                        </HorizontalStackLayout>
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            FontSize="18"
+                            Text="To:"
+                            VerticalOptions="Center" />
+                        <HorizontalStackLayout Grid.Row="1" Grid.Column="1">
+                            <DatePicker MinimumDate="{Binding LastYear}"
+                                        MaximumDate="{Binding NextYear}"
+                                        Date="{Binding Today}"/>
+                            <TimePicker Time="{Binding TimeTo}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+
+
+                    <Picker
+                        x:Name="Picker"
+                        Title="Select Color"
+                        SelectedIndex="{Binding ColorIndex}">
+                        <Picker.ItemsSource>
+                            <x:Array Type="{x:Type x:String}">
+                                <x:String>Red</x:String>
+                                <x:String>Blue</x:String>
+                                <x:String>Yellow</x:String>
+                                <x:String>Purple</x:String>
+                                <x:String>Pink</x:String>
+                                <x:String>Orange</x:String>
+                                <x:String>Brown</x:String>
+                            </x:Array>
+                        </Picker.ItemsSource>
+                    </Picker>
+                </StackLayout>
+            </Frame>
+            <Button
+                Margin="0,40"
+                BackgroundColor="{StaticResource YlmNmBlue}"
+                BorderColor="{StaticResource OxfordBlue}"
+                BorderWidth="3"
+                Command="{Binding SaveActivityCommand}"
+                FontAttributes="Bold"
+                HeightRequest="100"
+                HorizontalOptions="Center"
+                Text="ADD"
+                WidthRequest="100" />
+        </VerticalStackLayout>
+    </ScrollView>
+</views:ContentPageBase>

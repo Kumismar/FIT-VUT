@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<views:ContentPageBase
+    x:Class="project.App.Views.ActivityDetailView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:viewmodel="clr-namespace:project.App.ViewModels"
+    xmlns:views="clr-namespace:project.App.Views"
+    x:Name="ActivityDetailViewRoot"
+    Title="ActivityDetailView"
+    x:DataType="viewmodel:ActivityDetailViewModel"
+    BackgroundColor="{StaticResource SilverLakeBlue}"
+    Shell.NavBarIsVisible="False">
+    <VerticalStackLayout WidthRequest="600">
+        <Label
+            Margin="0,40"
+            FontSize="48"
+            HorizontalOptions="Center"
+            Text="{Binding Activity.Name}" />
+        <Frame BackgroundColor="Transparent" BorderColor="{StaticResource OxfordBlue}">
+            <Grid ColumnDefinitions="*,100">
+                <VerticalStackLayout Spacing="10">
+                    <HorizontalStackLayout Spacing="4">
+                        <Label
+                            FontSize="18"
+                            Text="From:"
+                            TextColor="{StaticResource Platinum}" />
+                        <Label FontSize="18" Text="{Binding Activity.DateTimeFrom}" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="26">
+                        <Label
+                            FontSize="18"
+                            Text="To:"
+                            TextColor="{StaticResource Platinum}" />
+                        <Label FontSize="18" Text="{Binding Activity.DateTimeTo}" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="4">
+                        <Label
+                            FontSize="18"
+                            Text="Description:"
+                            TextColor="{StaticResource Madder-Red}" />
+                        <Label FontSize="18" Text="{Binding Activity.Description}" />
+                    </HorizontalStackLayout>
+                </VerticalStackLayout>
+                <ImageButton
+                    Grid.Column="1"
+                    Padding="5"
+                    BackgroundColor="{StaticResource Platinum}"
+                    Command="{Binding Source={x:Reference ActivityDetailViewRoot}, Path=BindingContext.DeleteActivityCommand}"
+                    CommandParameter="{Binding Activity.Id}"
+                    HeightRequest="70"
+                    HorizontalOptions="End"
+                    WidthRequest="70">
+                    <ImageButton.Source>
+                        <FontImageSource
+                            FontFamily="FAS"
+                            Glyph="{StaticResource Delete}"
+                            Size="35"
+                            Color="{StaticResource Madder-Red}" />
+                    </ImageButton.Source>
+                </ImageButton>
+            </Grid>
+        </Frame>
+    </VerticalStackLayout>
+</views:ContentPageBase>
