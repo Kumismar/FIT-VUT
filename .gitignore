@@ -1,0 +1,10 @@
+log_files/
+*.csv
+
+# tex files
+*.aux
+*.log
+*.out
+*.synctex.gz
+
+_minted-report/
