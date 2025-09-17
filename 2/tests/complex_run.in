@@ -1,0 +1,33 @@
+S a P b
+P   A R
+S b Q c
+Q   B R
+S c R a
+R   C L
+S   S1 x
+S1  F L
+A a A1 a
+A1  A R
+A b A2 b
+A2  S L
+A c A3 c
+A3  B R
+A   A4 y
+A4  F L
+B a B1 b
+B1  A L
+B b B2 c
+B2  C R
+B c B3 a
+B3  S R
+B   B4 z
+B4  F L
+C a C1 c
+C1  C L
+C b C2 a
+C2  S R
+C c C3 b
+C3  A L
+C   C4 w
+C4  F R
+abcabcabcabcabcabc
