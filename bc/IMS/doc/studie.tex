@@ -1,0 +1,339 @@
+\documentclass[a4paper, 11pt, hidelinks]{article}
+\usepackage[left=2cm, top=3cm, text={17cm, 24cm}]{geometry}
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{dirtree}
+
+\bibliographystyle{plainurl}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        \Huge \textsc{Vysoké učení technické v~Brně} \\
+        \huge \textsc{Fakulta informačních technologií} \\
+        \vspace{\stretch{0.382}}
+        \Huge Negativní faktory ovlivňující pěstování pšenice
+        \huge Simulační studie k projektu IMS\\
+        \vspace{\stretch{0.618}}
+        \Large \today{} \hfill Ondřej Koumar, Adam Malysák
+    \end{center}
+\end{titlepage}
+
+\tableofcontents
+
+\newpage
+
+\section*{Úvod}\label{0_uvod}
+\addcontentsline{toc}{section}{Úvod}
+
+Pěstování a zpracování obilovin ovlivňují různé faktory.
+Mohou to být například faktory spojené s~počasím, škůdci nebo člověkem.
+Tato práce je zaměřena na sledování množství produkované mouky při pěstování pšenice.
+V úvahu bere i futuristický/sci-fi faktor, který může roční produkci pšenice úplně zdevastovat.
+Podmínky jsou simulovány v mírném klimatu, konkrétně v České republice.
+
+Smyslem experimentů s implementovaným modelem je simulovat hmotnostní ztráty výsledného produktu\,--\,mouky
+v závislosti na negativních faktorech, které produkci mohou ovlivnit.
+Je zahrnuta i ztrátovost hmotnosti při mletí pšenice, předpokládá se mletí na mouku bez otrub.
+
+Data obsažená v modelu vychází ze statistik Českého hydrometeorologického ústavu (ČHMÚ)\cite{CHMU} pro faktory spojené
+s teplotou, ovlivňování růstu pšenice z jiných odborných článků, které budou citovány dále ve studii.
+
+\section{Rozbor tématu a použitých metod/technologií}\label{1_rozbor}
+
+Zkoumaný model bere v úvahu hypotetický farmářský podnik, který vlastní 200\,ha pole, na kterém se pěstuje výhradně pšenice.
+Ke sklizni jsou k dispozici dvě auta na transport vymlácené pšenice z pole do skladu mlýna a jeden kombajn na samotné sklízení.
+Auta nějakou dobu tráví na cestě do a ze skladu, nějaký čas také tráví v samotném skladě, kde se náklad vyloží a řidič se zde může zdržet.
+
+Pěstování pšenice je rozděleno na několik fází.
+
+V první fázi je modelování čekání zaseté pšenice přes zimu na vzejití.
+Při této fázi může dojít k velkým mrazům, které zničí část úrody (v modelu sníží kvalitu úrody\footnote{Kvalitou zrní v modelu reprezentujeme ztrátu úrody zapřičiněnou negativními faktory.})\cite{AgroManualPrezimovani}.
+Šance, že taková situace nastane, je v modelu nastavena na 33\,\%\cite{CHMU} a může zničit část úrody danou normálním rozdělením se středem 13 a rozptylem 3.
+Před první fází může přijít do hry náš futuristický prvek, a to invaze mimozemské civilizace, která mimo jiné zničí i celou naši úrodu.
+To znamená, že produkce mouky daný rok je nulová.
+Tato invaze nastane průměrně jednou za 200 let.
+Rok po invazi produkce pokračuje jako obvykle. 
+
+V další fázi pšenice přečkala zimu a dalších pět měsíců roste a zraje.
+V této fázi úrodu mohou poškodit tři faktory: 
+\begin{itemize}
+    \item období sucha\cite{AgroManual},
+    \item období silných dešťů\cite{AgroManualPoskozeni2021},
+    \item škůdci\cite{BittnerSkodliveOrganismy}.
+\end{itemize}
+Každý z nich může nastat nezávisle na sobě a s pravděpodobností 33\,\% a může zničit část úrody danou normálním rozdělením se středem 13 a rozptylem 3.
+Pokud se těchto faktorů v jednom roce objeví více, každý další úbytek kvality pšenice se odečte z již zbylé úrody.
+
+Třetí fáze je sklizeň. Jakmile se do této fáze dostaneme, máme jeden měsíc na sklizení celé úrody.
+Auto dokáže pojmout úrodu jednoho hektaru pole, který odpovídá pěti tunám zrní, a poté ji odváží do skladu mlýna.
+Řekněme, že cesta auta do skladu i zpět na pole trvá přibližně 20 minut a výklad zrní trvá 10 minut, s tím, že řidič a obsluha skladu mohou začít konverzaci,
+která řidiče zdrží na dobu danou exponenciálním rozdělením se středem 3 minuty.
+
+Kombajn pracuje jen pokud má právě k dispozici auto na odvoz sklizeného zrní.
+Pokud auto k dispozici nemá, čeká na jeho návrat.
+Samotná sklizeň jednoho hektaru trvá kombajnu dobu danou normálním rozdělením se středem 16 minut a rozptylem 1,5 minuty.
+S každým dalším hektarem existuje pravděpodobnost, že se kombajn porouchá a nebude v provozu dobu danou exponenciálním rozdělením se středem dva dny.
+Na sklízení je vyhrazeno 10 hodin každého dne. 
+
+Po uplynutí měsíce se nesklizená část pole zahodí.
+
+\subsection{Technologie}\label{1.1_technologie}
+Model byl implementován a odsimulován v jazyce C++ s pomocí knihovny \href{https://www.fit.vutbr.cz/~peringer/SIMLIB/}{\textcolor{blue}{SIMLIB}}.
+
+\section{Koncepce modelu}\label{2_koncepce}
+
+Futuristický prvek mimozemské civilizace není vzhledem k jeho futuristickému konceptu podložen fakty a pravděpodobnost jeho výskytu jsme stanovili na velmi malou, ale jeho vliv je poměrně velký.
+
+Samotné zpracování zrní v mlýně již není pro náš model podstatné, a tedy z veškerého dostupného zrní je vypočítána hmotnost výsledného produktu, tedy mouky, bez modelování zpracování (čištění, mletí, apod.).
+Ve výsledném výpočtu používáme data, která poskytne samotná simulace\,--\,sklizené zrní a jeho kvalita.
+Navíc zde pracujeme i s mírou extrakce, kterou jsme stanovili na 70-80\,\%\cite{Alhendi2021}.
+
+Negativní faktory ovlivňující produkci by reálně část úrody zničily, nicméně v našem modelu pouze snižují kvalitu.
+Kombajn vždy musí sklidit všech 200\,ha pole, do jednoho auta se vždy vleze jeden hektar a ten odpovídá pěti tunám zrní.
+
+Další zjednodušení modelu spočívá ve vzájemné nezávislosti negativních faktorů.
+Například pokud nastane období sucha, pravděpodobnost velkých dešťů se nijak nezmění.
+Ale každý další snižuje procentuální kvalitu toho, co zbylo po předchozím.
+Například pokud mráz snížil kvalitu o 10\,\%, a poté škůdci sníží kvalitu o dalších 10\,\%, kvalita se sníží dohromady jen o 19\,\%.
+
+Jak bylo zmíněno v předchozí kapitole, celý náš podnik je hypotetický.
+Předpokládáme tedy věci typu: auto a kombajn má vždy kdo řídit, mají vždy dost paliva, porucha kombajnu může nastat s~nějakou pravděpodobností, atd..
+
+\section{Implementace}\label{3_implementace}
+
+Simulační program se skládá ze čtyř hlavních procesů, a to \texttt{Quality}, \texttt{Harvester}, \texttt{Harvest} a \texttt{DayCycle}. 
+
+Proces \texttt{Quality} simuluje první dvě fáze, tedy zimu a růst pšenice.
+Aktivují se zde procesy poruch (negativní faktor), které se s nějakou pravděpodobností projeví a sníží celkovou kvalitu úrody.
+
+Po dokončení růstu se aktivují procesy \texttt{Harvester} a \texttt{Harvest}.
+
+Proces \texttt{Harvester} simuluje sklizeň pole kombajnem po hektarech. Hektary jsou reprezentovány skladem, ze kterého si kombajn postupně zabírá hektary ke zpracování.
+Kombajn k práci potřebuje i auta, která jsou také reprezentována skladem.
+Kombajn se tedy pokusí si zabrat auto, na které někdy bude muset čekat z důvodu cesty auta do skladu a zpět.
+Pokaždé než si kombajn chce začít zabírat zdroje ke sklizni, existuje 5\% pravděpodobnost, že se porouchá a bude se opravovat dobu danou exponenciálním rozdělením se středem 2 dny.
+
+Proces \texttt{DayCycle} simuluje denní cyklus. 
+Nejdříve 10 hodin čeká a poté si na 14 hodin zabere obslužnou linku \texttt{day}, kterou procecs \texttt{Harvester} potřebuje, aby mohl pracovat.
+Takhle se opakuje do konce simulačního běhu.
+
+Proces \texttt{Harvest} simuluje dobu sklizně stanovenou na jeden měsíc.
+Po uplynutí jednoho měsíce vyprázdní sklad hektarů a tím zastaví proces \texttt{Harvester}, což simuluje situaci, kdy se nestihlo sklidit celé pole.
+Zbylé hektary jsou tedy zahozeny.
+
+Statistika se sbírá z:
+\begin{itemize}
+    \item množství vyprodukované mouky,
+    \item kvality pšenice,
+    \item počtu oprav kombajnu a průměrného času stráveného opravou,
+    \item doby, kterou auto strávilo ve skladu,
+    \item počtu hektarů, které se nestihly sklidit během sklizně,
+    \item počtu invazí mimozemšťanů.
+\end{itemize}
+Z těchto statistik pak lze vyhodnotit závěry.
+
+\section{Experimenty}\label{4_experimenty}
+
+Cílem experimentování s modelem je zjistit, jaká je produkce mouky farmy, když růst pšenice, sklizeň a další ovlivňují různé faktory.
+Je možné hledat limity, časů a pravděpodobností, pro které bude farma schopna zpracovat veškerou úrodu.
+Příkladem může být různý rozsah denní pracovní doby, doba zdržení auta ve skladu zrní, doba oprav kombajnu, pravděpodobnost poruch kombajnu, a podobně.
+
+\subsection{Postup experimentování}\label{4_1_postup_exp}
+
+V kódu jsou definovány konstanty, které se dají libovolně modifikovat.
+Dá se modifikovat doba zdržení auta ve skladu, kolik auto uveze tun nebo doba sklízení jednoho hektaru, čímž se dá simulovat různá výkonnost kombajnu a různé další konstanty.
+
+Dají se odsimulovat i jiné podnebné podmínky změnou pravděpodobností výskytu a mírou vlivu negativních faktorů spojených s počasím.
+
+Výstup z experimentů se dá použít například k\ldots
+
+\subsection{Příklady experimentů}\label{4_2_priklady}
+
+Experimenty, které byly na modelu provedeny, se týkaly klimatických změn, oprav kombajnu a doby vyložení auta ve skladu.
+V každém experimentu je simulace spuštěna 10000$\times$.
+
+\subsubsection{Změna klimatu}\label{4_2_1_zmena}
+
+Pro zvýšení validace modelu byl jako první proveden experiment, kdy tuhé mrazy přišly každou zimu a vždy zničily 100\,\% úrody.
+Očekávaným, a zároveň skutečným, výsledkem byla výsledná produkce mouky 0 tun za rok. 
+
+Prvním experimentem byl pokus o simulaci tužších klimatických podmínek.
+Výchozí hodnoty pro pravděpodobnost tuhé zimy a pro úbytek úrody jsou 33\% a 13\%.
+
+Nejprve v první tabulce můžeme vidět výsledky experimentu, ve kterém jsme zvyšovali prav\-dě\-po\-dob\-nost příchodu tuhé zimy a sledovali, jak ovlivňuje produkci.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|p{0.4\textwidth}|X|X|}
+        \hline
+        \textbf{Pravděpodobnost tuhé zimy} & \textbf{Kvalita v \%} & \textbf{Mouka v t} \\
+        \hline
+        33\% & 83 & 624 \\
+        \hline
+        40\% & 83 & 620 \\
+        \hline
+        50\% & 82 &  610 \\
+        \hline
+        100\% & 76 & 571 \\
+        \hline
+    \end{tabularx}
+    \caption{Závislost produkce na zvyšující se pravděpodobnosti příchodu tuhé zimy.}
+    \label{tab:zima_casto}
+\end{table}
+
+\newpage
+Ve druhé tabulce jsou výsledky experimentu, kde se zvyšuje tuhost zimy, e.g. procento úbytku úrody při příchodu tuhé zimy. 
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|X|X|X|}
+      \hline
+      \textbf{\% úbytku úrody} & \textbf{Kvalita v \%} & \textbf{Mouka v t} \\
+      \hline
+      13 & 83 & 624 \\
+      \hline
+      15 & 83 & 621 \\
+      \hline
+      30 & 79 & 589 \\
+      \hline
+      50 & 72 & 540 \\
+      \hline
+    \end{tabularx}
+    \caption{Závislost produkce na zvyšujícím se úbytku úrody při příchodu tuhé zimy.}
+    \label{tab:zima_ubytek}
+\end{table}
+  
+V poslední tabulce tohoto experimentu sledujeme reálné tužší podnebí.
+To znamená častější a tužší zimy spojené s větší deštivostí v létě.
+Zkratky: \emph{PTZ} - pravděpodobnost příchodu tuhé zimy, \emph{TZ} - tuhost zimy, úbytek úrody v tuhé zimě,
+\emph{PD} - pravděpodobnost silných dešťů, \emph{ND} - ničivost dešťů, \emph{K} - kvalita, \emph{M} - mouka.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|X|X|X|X|X|X|}
+      \hline
+      \textbf{PTZ\%} & \textbf{TZ\%} & \textbf{PD\%} & \textbf{ND\%} & \textbf{K\%}  & \textbf{Mt} \\
+      \hline
+      33 & 13 & 33 & 13 & 83 & 624\\
+      \hline
+      40 & 30 & 40 & 30 & 71 & 530\\
+      \hline
+      50 & 30 & 50 & 30 & 66 & 494\\
+      \hline
+      50 & 50 & 50 & 50 & 51 & 383\\
+      \hline
+    \end{tabularx}
+    \caption{Závislost produkce na tužších a častější zimách a silnějších a častějších deštích.}
+    \label{tab:example}
+\end{table}
+
+
+\subsubsection{Řidičova výřečnost}\label{4_2_2_vykecavani}
+
+Dalším experimentem byla simulace výřečnějších řidičů.
+Když řidič odváží náklad do skladu, může se tam zdržet v rámci přátelských konverzací.
+Výchozí doba strávená ve skladu je 10 minut (výklad zrní) a~navíc doba daná exponenciálním rozdělením se středem 3 minuty.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|X|X|}
+      \hline
+      \textbf{Střední hodnota zdržení v minutách} & \textbf{Počet nesklizených hektarů pole} \\
+      \hline
+      3 & 2,3 \\
+      \hline
+      4 & 2,5 \\
+      \hline
+      10 & 2,8 \\
+      \hline
+      20 & 3,5 \\
+      \hline
+      50 & 6,3 \\
+      \hline
+    \end{tabularx}
+    \caption{Závislost nesklizených hektarů pole na výřečnosti řidiče.}
+    \label{tab:vykecavani}
+\end{table}
+
+\subsubsection{Lakatoš}\label{4_2_3_lakatos}
+
+Experiment s pracovním názvem Lakatoš spočíval v simulaci větší pravděpodobnosti poruchy kombajnu a delší doby opravování.
+Výchozí doba opravy je daná exponenciálním rozdělením se středem 2 dny.
+
+V tabulce 5 sledujeme, jak se mění počet nesklizených hektarů, když se zvyšuje trvání opravy kombajnu.
+V tabulce 6 sledujeme, jak se mění počet nesklizených hektarů, když se zvyšuje pravděpodobnost poruchy kombajnu.
+
+\newpage
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|X|X|}
+      \hline
+      \textbf{Střední hodnota doby opravy ve dnech} & \textbf{Počet nesklizených hektarů pole} \\
+      \hline
+      2 & 2,3 \\
+      \hline
+      3 & 9,1 \\
+      \hline
+      5 & 29,1 \\
+      \hline
+      10 & 68,4 \\
+      \hline
+      20 & 102,7 \\
+      \hline
+    \end{tabularx}
+    \caption{Závislost nesklizených hektarů pole na době opravy kombajnu.}
+    \label{tab:lakatos1}
+\end{table}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabularx}{\textwidth}{|X|X|}
+      \hline
+      \textbf{Pravděpodobnost poruchy v \%} & \textbf{Počet nesklizených hektarů pole} \\
+      \hline
+      2 & 2,3 \\
+      \hline
+      3 & 6 \\
+      \hline
+      5 & 22,5 \\
+      \hline
+      10 & 80,1 \\
+      \hline
+      20 & 133 \\
+      \hline
+    \end{tabularx}
+    \caption{Závislost nesklizených hektarů pole na pravděpodobnosti poruchy kombajnu.}
+    \label{tab:lakatosě}
+\end{table}
+
+\subsection{Odhalené chyby}\label{4_3_chyby}
+
+Během experimentování s vytvořeným modelem byly odhaleny chyby v implementaci.
+Mezi chyby patří neaktivování procesu denního cyklu, což způsobilo vždy kompletní sklizeň, odhalení chybného plánování procesu, kdy při 100\% pravděpodobnosti příchodu zimy a zároveň 100\% ničivosti jsme stále viděli nenulovou produkci mouky. 
+
+\section{Závěr}\label{5_zaver}
+
+Experimenty prováděné na modelu tvrdí, že pěstování pšenice v drsnějších klimatických podmínkách vede na nižší produkci mouky, nicméně stále je to reálné, počítáme-li s touto skutečností.
+
+Dále tvrdí, že i s řidiči, kteří se déle zdržují ve skladu a zdržují tak proces sklizně, je možné sklizeň stihnout včas.
+I když se zdrží drasticky déle, celkovou úspěšnost sklizně tolik neovlivní.
+
+Z experimentu Lakatoš vyplývá, že spolehlivost kombajnu je mnohem kritičtější a vyšší poruchovost či doba opravy značně ovlivňuje plynulý průběh sklizně.
+
+Na tomto modelu se dá zkoumat vliv různých faktorů negativně ovlivňujích produkci mouky hypotetického podniku.
+Dokazují to experimenty provedené v rámci této studie.
+
+\newpage
+
+\bibliography{references}
+
+\end{document}
