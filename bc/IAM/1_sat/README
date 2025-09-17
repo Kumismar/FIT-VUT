@@ -1,0 +1,8 @@
+Nelekejte se, zde najdete jen navod k pouziti.
+
+Skript spustite takto:
+    python3 queens.py N [filename]
+kde N je rozmer sachovnice a filename je optional nazev souboru, do ktereho se bude vypisovat output (klauzule).
+Neni-li specifikovan filename, output se vypise na stdout.
+
+Skript spousten na Fedore 39 s Pythonem3.12 (funkcni). 
