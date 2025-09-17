@@ -1,0 +1,7 @@
+int base = 3;
+int exponent = 8;
+int result = 1;
+while (exponent > 0) {
+    result = result * base
+}
+return result;

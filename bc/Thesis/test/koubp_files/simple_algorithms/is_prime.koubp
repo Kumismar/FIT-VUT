@@ -1,0 +1,29 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-04-02 12:31
+ * @ Modified time: 2024-05-01 11:04
+ */
+
+function is_prime(int num): bool {
+    if (num <= 1) {
+        return false;
+    }
+    int i = 2;
+    bool is_divisible = false;
+    while (i * i <= num && !is_divisible) {
+        if (num - (num / i) * i == 0) {
+            is_divisible = true;
+        }
+        i = i + 1;
+    }
+    return !is_divisible;
+}
+
+print("Enter a number to check if it's prime:\n");
+int number = convert_int(readline());
+if (is_prime(number)) {
+    print(convert_string(number) + " is a prime number.");
+} else {
+    print(convert_string(number) + " is not a prime number.");
+}

@@ -1,0 +1,9 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 09:40
+ * @ Modified time: 2024-05-01 09:40
+ */
+
+for (int i = 0; i == x; i = i + 3) 
+    functionCall();

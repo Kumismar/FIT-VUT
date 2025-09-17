@@ -1,0 +1,23 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-04-02 12:31
+ * @ Modified time: 2024-05-01 11:04
+ */
+
+function decimal_to_binary(int decimal): string {
+    string binary = "";
+    while (decimal > 0) {
+        int remainder = decimal - (decimal / 2) * 2;
+        binary = convert_string(remainder) + binary;
+        decimal = decimal / 2;
+    }
+    if (length(binary) == 0) {
+        binary = "0";
+    }
+    return binary;
+}
+
+print("Enter a decimal number to convert to binary:\n");
+int decimal_number = convert_int(readline());
+print("The binary equivalent of " + convert_string(decimal_number) + " is: " + decimal_to_binary(decimal_number));

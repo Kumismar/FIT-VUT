@@ -1,0 +1,21 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-03-30 18:16
+ * @ Modified time: 2024-05-01 11:04
+ */
+
+function factorial(int number): int {
+    if (number < 0) {
+        return -1;
+    }
+    elseif (number <= 1) {
+        return 1;
+    }
+
+    return number * factorial(number - 1);
+}
+
+print("Give a number to calculate factorial:\n");
+int number = convert_int(readline());
+print("result is:" + convert_string(factorial(number)));

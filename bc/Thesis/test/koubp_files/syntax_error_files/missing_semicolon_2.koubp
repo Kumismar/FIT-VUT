@@ -1,0 +1,2 @@
+print("Input any string that you'll like")
+print("You've entered:" + readline());
