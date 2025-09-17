@@ -1,0 +1,22 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-04-02 12:31
+ * @ Modified time: 2024-05-01 11:04
+ */
+
+function binary_to_decimal(string binary): int {
+    int decimal = 0;
+    int power = length(binary) - 1;
+    for (int i = 0; i < length(binary); i = i + 1) {
+        if (substring(binary, i, 1) == "1") {
+            decimal = decimal + power(2, power);
+        }
+        power = power - 1;
+    }
+    return decimal;
+}
+
+print("Enter a binary number to convert to decimal:\n");
+string binary_number = readline();
+print("The decimal equivalent of " + binary_number + " is: " + convert_string(binary_to_decimal(binary_number)));

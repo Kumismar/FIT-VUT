@@ -1,0 +1,31 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-03-30 21:51
+ * @ Modified time: 2024-03-30 22:04
+ */
+
+function fibonacci(int n): int {
+    if (n <= 0) {
+        return -1;
+    }
+    elseif (n == 1 || n == 2) {
+        return 1;
+    }
+
+    int a = 1;
+    int b = 1;
+    int result = 0;
+
+    for (int i = 3; i <= n; i = i + 1) {
+        result = a + b;
+        a = b;
+        b = result;
+    }
+
+    return result;
+}
+
+print("Enter the position of the Fibonacci number to calculate:\n");
+int position = convert_int(readline());
+print("The Fibonacci number at position " + convert_string(position) + " is: " + convert_string(fibonacci(position)));

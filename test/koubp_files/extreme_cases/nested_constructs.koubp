@@ -1,0 +1,29 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 10:05
+ * @ Modified time: 2024-05-01 10:44
+ */
+
+if (exp) {
+    if (exp) {
+        if (exp) {
+            if (exp) {
+                if (exp) {
+                    code();
+                } elseif (exp) {
+                    code();
+                }
+                for (i;i;i)
+                    while (true) {
+                        if (exp)
+                            something;
+                        else something;
+                    }
+            }
+        }
+        else {
+            code();
+        }
+    }
+}

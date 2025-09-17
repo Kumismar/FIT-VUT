@@ -1,0 +1,11 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 09:47
+ * @ Modified time: 2024-05-01 10:05
+ */
+
+bool expression = (1 + (foo(bar, baz(foo(bar) . "hello"), param(arg1, arg2))) / foo2*bar2) && true;
+if (expression || (expression2 >= 42 && 37 = 4) + foo(foo(foo(foo(foo(foo(bar, baz), bar), baz), baz, bar), bar), baz)) {
+    some_code();
+}

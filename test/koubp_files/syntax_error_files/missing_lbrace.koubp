@@ -1,0 +1,10 @@
+print("Select to read from file (type \"file\") or stdin (type nothing):\n");
+string choice = readline();
+if (choice == "")
+    print("You chose stdin\n");
+} else {
+    if (file_write("output.txt", "You chose file\n") == -1) {
+        print("error when writing to file");
+        exit(-1); 
+    }
+}

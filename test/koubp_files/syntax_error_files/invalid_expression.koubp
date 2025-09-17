@@ -1,0 +1,8 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 11:05
+ * @ Modified time: 2024-05-01 11:07
+ */
+
+bool exp = foo() && 3 ||;

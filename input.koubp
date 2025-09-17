@@ -1,0 +1,4 @@
+if (vyraz)
+    prikaz();
+else if (vyraz)
+    prikaz(do_something(bar) + var);

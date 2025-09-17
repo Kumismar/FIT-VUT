@@ -1,0 +1,29 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-03-30 22:03
+ * @ Modified time: 2024-03-30 22:04
+ */
+
+function is_palindrome(string str): bool {
+    int length = length(str);
+    int start = 0;
+    int end = length - 1;
+    bool is_palindrome = true;
+    while (start < end && is_palindrome) {
+        if (substring(str, start, 1) != substring(str, end, 1)) {
+            is_palindrome = false;
+        }
+        start = start + 1;
+        end = end - 1;
+    }
+    return is_palindrome;
+}
+
+print("Enter a string to check if it's a palindrome:\n");
+string input = readline();
+if (is_palindrome(input)) {
+    print(input + " is a palindrome.");
+} else {
+    print(input + " is not a palindrome.");
+}

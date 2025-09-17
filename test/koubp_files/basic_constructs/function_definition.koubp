@@ -1,0 +1,13 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 09:42
+ * @ Modified time: 2024-05-01 09:42
+ */
+
+function someFunction(int param1m, string param2): float {
+    code();
+    code();
+    code();
+    return something;
+}

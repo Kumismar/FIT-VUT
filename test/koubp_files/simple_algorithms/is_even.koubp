@@ -1,0 +1,25 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-04-02 15:32
+ * @ Modified time: 2024-05-01 11:04
+ */
+
+function is_even(int a): bool {
+    return ((a / 2) * 2 == 0 || a == 0);
+}
+
+while (true) {
+    print("Input a number or 'q' to quit:\n");
+    string input = readline();
+    if (input == "q") {
+        return;
+    }
+
+    int number = convert_int(input);
+    if (is_even(number)) {
+        print("Number $number is even\n");
+    } else {
+        print("Number $number is odd\n");
+    }
+}

@@ -1,0 +1,22 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-04-02 12:31
+ * @ Modified time: 2024-05-01 11:04
+ */
+
+function power(float base, int exponent): float {
+    float result = 1.0;
+    int i = 0;
+    while (i < exponent) {
+        result = result * base;
+        i = i + 1;
+    }
+    return result;
+}
+
+print("Enter the base:\n");
+float base = convert_float(readline());
+print("Enter the exponent:\n");
+int exponent = convert_int(readline());
+print("The result of " + convert_string(base) + " raised to the power of " + convert_string(exponent) + " is: " + convert_string(power(base, exponent)));

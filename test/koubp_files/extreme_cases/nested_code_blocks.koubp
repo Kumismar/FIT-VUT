@@ -1,0 +1,21 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-04-18 10:03
+ * @ Modified time: 2024-04-18 10:20
+ */
+
+{
+    {
+        {
+            {
+                for (i;i;i) return;
+                {}
+                {
+                    print("how did we get here?");
+                    {}
+                }
+            }
+        }
+    }
+}

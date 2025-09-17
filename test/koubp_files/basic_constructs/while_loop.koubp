@@ -1,0 +1,11 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 09:38
+ * @ Modified time: 2024-05-01 09:39
+ */
+
+while (expression) {
+    fCall1();
+    fCall2();
+}

@@ -1,0 +1,10 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 11:18
+ * @ Modified time: 2024-05-01 11:18
+ */
+
+function foo(int param1, int param2) {
+    code();
+}

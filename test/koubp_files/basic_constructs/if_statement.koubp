@@ -1,0 +1,12 @@
+/**
+ * @ Author: Ondřej Koumar
+ * @ Email: xkouma02@stud.fit.vutbr.cz
+ * @ Create Time: 2024-05-01 09:37
+ * @ Modified time: 2024-05-01 09:47
+ */
+
+if (expression) {
+    code_sequence();
+} elseif (expression2()) {
+    code_sequence();
+} else code();
