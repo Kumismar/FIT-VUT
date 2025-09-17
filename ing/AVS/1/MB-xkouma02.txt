@@ -1,0 +1,36 @@
+#### Stručně ale věcně odpovězte na následující otázky: ######
+
+1. Jaká byla dosažena výkonnost v Intel Advisoru pro implementace ref, line a batch
+(v GFLOPS)? (0.5b)
+==============================================================================
+Ref 3.20, Line 26.12, Batch 22.68
+
+
+2. Porovnejte implementaci referenčního rešení oproti "Line" a "Batch" implementaci.
+Jakým způsobem jsou načítána data, proč, a jaký to má vliv na výkon. (1b)
+==============================================================================
+V referenčním řešení nejsou použity předpočítané hodnoty, pro každý bod se sekvenčně počítá jeho mandelbrotova množina.
+Ve vektorizovaném kódu se provádí několik těchto operací najednou.
+Data také nejsou optimálně zarovnána na řádek cache. 
+
+3. Porovnejte Roofline všech modelů. Jsou implementace memory
+bound? Jaká je vaše aritmetická intenzita? Dokázali byste ji přibližně spočítat 
+i ručně a jak? (1b)
+==============================================================================
+Jsou memory bound kromě line, který je compute bound. Pro batch jsem dosáhl aritmetické intenzity 8.321 flops/byte.
+Line implementace má 8.556 flops/byte.
+
+Ruční výpočet: Počet provedených operací / počet přenesených B.
+
+
+4. Komentujte vliv velikosti cache na výkonnost a chování na větších
+velikostech domény. (1b)
+==============================================================================
+Malé matice se dají celé vložit do cache a potom provádět výpočty.
+Pro větší matice, které se nevlezou, je výhodnější batch implementace, která v implementaci respektuje strukturu cache; data se musí tahat z DRAM.  
+
+5. Jaký vliv na výkonnost má symetrie? Lze tento rozdíl pozorovat v Intel Advisor?
+(nápověda: instrukce) (0.5b)
+==============================================================================
+Velký. Nejvíc času programu zaberou vektorové aritmetické instrukce na floating point operace a díky symetrii je možné je minimalizovat.
+Výpočet indexu a vložení symterického prvku je méně náročné než výpočty. 
