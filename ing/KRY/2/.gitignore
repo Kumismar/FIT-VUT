@@ -1,0 +1,7 @@
+*.priv
+*.pub
+*.shared
+.vscode/
+__pycache__/
+*minted*
+*.synctex.gz
