@@ -9,13 +9,12 @@
 /**
  * @file tdd_code.cpp
  * @author Ondrej Koumar
- * 
+ *
  * @brief Implementace metod tridy prioritni fronty.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
-
+#include <stdlib.h>
 
 #include "tdd_code.h"
 
@@ -39,11 +38,10 @@ PriorityQueue::PriorityQueue()
 }
 
 PriorityQueue::~PriorityQueue()
-{ 
-    while (m_pHead != NULL)
-    {
-        Element_t *rm_node = m_pHead;
-        
+{
+    while (m_pHead != NULL) {
+        Element_t* rm_node = m_pHead;
+
         m_pHead = m_pHead->pNext;
         delete rm_node;
     }
@@ -51,39 +49,31 @@ PriorityQueue::~PriorityQueue()
 
 void PriorityQueue::Insert(int value)
 {
-    Element_t *new_node = new Element_t;
+    Element_t* new_node = new Element_t;
     new_node->pNext = NULL;
     new_node->value = value;
-        
 
-    if (m_pHead == NULL)
-    {
+    if (m_pHead == NULL) {
         m_pHead = new_node;
 
         return;
-    }
-    else if (new_node->value > m_pHead->value)
-    {
-        Element_t *temp = m_pHead;
+    } else if (new_node->value > m_pHead->value) {
+        Element_t* temp = m_pHead;
         m_pHead = new_node;
         m_pHead->pNext = temp;
 
         return;
     }
 
-    Element_t *tmp_node = m_pHead;
+    Element_t* tmp_node = m_pHead;
 
-    while (tmp_node->pNext != NULL)
-    {
-        if (new_node->value >= tmp_node->pNext->value)
-        {
+    while (tmp_node->pNext != NULL) {
+        if (new_node->value >= tmp_node->pNext->value) {
             new_node->pNext = tmp_node->pNext;
             tmp_node->pNext = new_node;
 
             return;
-        }
-        else if (new_node->value <= tmp_node->pNext->value && tmp_node->pNext->pNext == NULL)
-        {
+        } else if (new_node->value <= tmp_node->pNext->value && tmp_node->pNext->pNext == NULL) {
             tmp_node->pNext->pNext = new_node;
             new_node->pNext = NULL;
 
@@ -96,52 +86,43 @@ void PriorityQueue::Insert(int value)
 
 bool PriorityQueue::Remove(int value)
 {
-    if (m_pHead == NULL)
-    {
+    if (m_pHead == NULL) {
         return false;
     }
 
-    Element_t *tmp_node = m_pHead;
+    Element_t* tmp_node = m_pHead;
 
-    if (tmp_node->pNext == NULL && tmp_node->value == value)
-    {
+    if (tmp_node->pNext == NULL && tmp_node->value == value) {
         delete tmp_node;
         m_pHead = NULL;
 
         return true;
-    }
-    else if (tmp_node->pNext != NULL && tmp_node->value == value)
-    {
-        Element_t *tmp = tmp_node->pNext;
+    } else if (tmp_node->pNext != NULL && tmp_node->value == value) {
+        Element_t* tmp = tmp_node->pNext;
 
         delete tmp_node;
         m_pHead = tmp;
 
         return true;
-    }
-    else
-    {
-        while (tmp_node->pNext != NULL)
-        {
-            Element_t *rm_node = tmp_node->pNext;
+    } else {
+        while (tmp_node->pNext != NULL) {
+            Element_t* rm_node = tmp_node->pNext;
 
-            if (rm_node->pNext == NULL && rm_node->value == value)
-            {
+            if (rm_node->pNext == NULL && rm_node->value == value) {
                 delete rm_node;
                 tmp_node->pNext = NULL;
-                
+
                 return true;
             }
 
             /**
              * Tady tato podminka neni pro tuto konkretni implementaci potrebna.
-             * Nicmene si myslim, ze by zde mela byt i za cenu strzeni bodu, protoze kdyby se volal remove na nahodne prvky, 
+             * Nicmene si myslim, ze by zde mela byt i za cenu strzeni bodu, protoze kdyby se volal remove na nahodne prvky,
              * mohlo by se stat, ze by tato podminka potrebna byla.
              * R.I.P. 100% line coverage.
              */
-            else if (rm_node->pNext != NULL && rm_node->value == value)
-            {
-                Element_t *behind_node = rm_node->pNext;
+            else if (rm_node->pNext != NULL && rm_node->value == value) {
+                Element_t* behind_node = rm_node->pNext;
 
                 delete rm_node;
                 tmp_node->pNext = behind_node;
@@ -152,18 +133,16 @@ bool PriorityQueue::Remove(int value)
             tmp_node = tmp_node->pNext;
         }
     }
-    
+
     return false;
 }
 
-PriorityQueue::Element_t *PriorityQueue::Find(int value)
+PriorityQueue::Element_t* PriorityQueue::Find(int value)
 {
-    Element_t *tmp_node = m_pHead;
+    Element_t* tmp_node = m_pHead;
 
-    while (tmp_node != NULL)
-    {
-        if (tmp_node->value == value)
-        {
+    while (tmp_node != NULL) {
+        if (tmp_node->value == value) {
             return tmp_node;
         }
 
@@ -175,19 +154,18 @@ PriorityQueue::Element_t *PriorityQueue::Find(int value)
 
 size_t PriorityQueue::Length()
 {
-    Element_t *tmp_node = m_pHead;
+    Element_t* tmp_node = m_pHead;
     unsigned count = 0;
 
-    while (tmp_node != NULL)
-    {
+    while (tmp_node != NULL) {
         count++;
         tmp_node = tmp_node->pNext;
     }
 
-	return count;
+    return count;
 }
 
-PriorityQueue::Element_t *PriorityQueue::GetHead()
+PriorityQueue::Element_t* PriorityQueue::GetHead()
 {
     return m_pHead;
 }

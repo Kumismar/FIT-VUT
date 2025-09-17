@@ -9,7 +9,7 @@
 /**
  * @file tdd_code.h
  * @author Ondrej Koumar
- * 
+ *
  * @brief Definice rozhrani prioritni fronty.
  */
 #pragma once
@@ -24,8 +24,7 @@
  * Dale ma kazda polozka hodnotu typu "int", pricemz fronta muze obsahovat vice
  * polozek se stejnou hodnotou.
  */
-class PriorityQueue
-{
+class PriorityQueue {
 public:
     /**
      * @brief PriorityQueue
@@ -44,9 +43,9 @@ public:
      * Struktura polozky ve fronte.
      */
     struct Element_t {
-        Element_t *pNext;   ///< Ukazatel na nasledujici prvek ve fronte.
+        Element_t* pNext; ///< Ukazatel na nasledujici prvek ve fronte.
 
-        int value;          ///< Hodnota teto polozky ve fronte.
+        int value; ///< Hodnota teto polozky ve fronte.
     };
 
     /**
@@ -75,7 +74,7 @@ public:
      * @param value Hodnota hledane polozky.
      * @return Vrati ukazatel na polozku s hodnotou "value", nebo NULL pokud takova neexistuje.
      */
-    Element_t *Find(int value);
+    Element_t* Find(int value);
 
     /**
      * @brief Length
@@ -91,10 +90,10 @@ public:
      * @return Vraci ukazatel na 1./nejvetsi polozku fronty, nebo NULL, pokud je
      * fronta prazdna.
      */
-    Element_t *GetHead();
+    Element_t* GetHead();
 
 protected:
-    Element_t *m_pHead;     ///< Ukazatel na zacatek fronty.
+    Element_t* m_pHead; ///< Ukazatel na zacatek fronty.
 };
 
 #endif // TDD_CODE_H_
