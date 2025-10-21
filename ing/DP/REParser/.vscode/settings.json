@@ -1,0 +1,19 @@
+{
+    "autoHeader": {
+        "format": {
+            "startWith": "/**",
+            "middleWith": "*",
+            "endWith": "*/",
+            "headerPrefix": "@",
+        },
+        "header": {
+            "Author": "Ondřej Koumar",
+            "Project": "REParser",
+            "Create Date": {
+                "type": "createTime",
+                "format": "YYYY-MM-DD",
+            },
+            "Description": "",
+        }
+    },
+}

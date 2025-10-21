@@ -1,5 +1,12 @@
-#include "include/CLI11.hpp"
-#include "include/REParser.hpp"
+/**
+ * @ Author: Ondřej Koumar
+ * @ Project: REParser
+ * @ Create Date: 2025-10-21
+ * @ Description:
+ */
+
+#include "CLI11.hpp"
+#include "REParser.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -34,6 +41,7 @@ int main(int argc, char** argv)
 
     try {
         REParser parser(stringRegex, outputFile);
+        parser.Parse();
     } catch (const std::exception& e) {
         std::cerr << "A problem occured during parsing:" << e.what() << std::endl;
         return EXIT_FAILURE;

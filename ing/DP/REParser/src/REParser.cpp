@@ -1,11 +1,26 @@
-#include "include/REParser.hpp"
+/**
+ * @ Author: Ondřej Koumar
+ * @ Project: REParser
+ * @ Create Date: 2025-10-21
+ * @ Description:
+ */
 
-REParser::REParser(std::string& regex, std::ofstream& outputFile)
+#include "REParser.hpp"
+
+#include "Lexer.hpp"
+
+#include <memory>
+
+REParser::REParser(std::string& inputRegex, std::ofstream& outputFile)
 {
-    this->regex = std::move(regex);
+    m_regex = std::move(inputRegex);
     if (outputFile) {
-        this->printAST = true;
+        m_printAST = true;
     }
+    m_lexer.Initialize(m_regex);
 }
 
-void REParser::Parse() { }
+ASTNodePtr REParser::Parse()
+{
+    return std::make_shared<ASTNode>();
+}
