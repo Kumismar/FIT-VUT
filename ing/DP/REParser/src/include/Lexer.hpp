@@ -22,6 +22,10 @@ class Lexer
     std::string_view m_regex;
     uint32_t m_position;
 
+    uint32_t getNameLength(uint32_t groupNameStartPos);
+    TokenType parseFourthCharInCaptureGroup(uint32_t& tokenLength, uint32_t& tmpPosition);
+    TokenType parseThirdCharInCaptureGroup(uint32_t& tokenLength, uint32_t& tmpPosition);
+
 public:
     void Initialize(std::string& inputRegex);
     Token GetNextToken();
