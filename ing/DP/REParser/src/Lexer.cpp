@@ -53,10 +53,11 @@ void Lexer::Initialize(std::string& inputRegex)
     m_position = 0;
 }
 
-TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength, uint32_t& tmpPosition)
+TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength)
 {
     TokenType tokenType;
-    char fourthChar = m_regex[++tmpPosition];
+    const uint32_t fourthCharPos = m_position + 3;
+    char fourthChar = m_regex[fourthCharPos];
 
     switch (fourthChar) {
         case '=': {
@@ -71,17 +72,18 @@ TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength, uint32_t& 
         }
         default: {
             tokenType = TokenType::GROUP_NAMED_START;
-            tokenLength = 3 + getNameLength(tmpPosition) + CLOSING_ANGLE_BRACKET_OFFSET;
+            tokenLength = 3 + getNameLength(fourthCharPos) + CLOSING_ANGLE_BRACKET_OFFSET;
             break;
         }
     }
     return tokenType;
 }
 
-TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength, uint32_t& tmpPosition)
+TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength)
 {
     TokenType tokenType;
-    char thirdChar = m_regex[++tmpPosition];
+    const uint32_t thirdCharPos = m_position + 2;
+    char thirdChar = m_regex[thirdCharPos];
 
     switch (thirdChar) {
         case ':': {
@@ -104,7 +106,7 @@ TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength, uint32_t& t
                 throw std::runtime_error("Unfinished sequence '(?<' at the end of regex");
             }
 
-            tokenType = parseFourthCharInCaptureGroup(tokenLength, tmpPosition);
+            tokenType = parseFourthCharInCaptureGroup(tokenLength);
             break;
         }
         default: {
@@ -159,9 +161,9 @@ Token Lexer::GetNextToken()
                 break;
             }
 
-            uint32_t tmpPosition = m_position;
+            const uint32_t secondCharPos = m_position + 1;
 
-            char secondChar = m_regex[++tmpPosition];
+            char secondChar = m_regex[secondCharPos];
             if (secondChar != '?') {
                 tokenType = TokenType::GROUP_START;
                 break;
@@ -171,7 +173,7 @@ Token Lexer::GetNextToken()
                 throw std::runtime_error("Unfinished sequence '(?' at the end of regex");
             }
 
-            tokenType = parseThirdCharInCaptureGroup(tokenLength, tmpPosition);
+            tokenType = parseThirdCharInCaptureGroup(tokenLength);
             break;
         }
         default: {

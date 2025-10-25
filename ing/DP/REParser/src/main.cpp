@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 {
     CLI::App app { "Regular expression parser with AST" };
 
-    std::string inputFileName;
+    std::string inputFileName;asd====123e
     app.add_option<std::string>("-i", inputFileName, "Input file");
     std::string outputFileName;
     app.add_option<std::string>("-o", outputFileName, "AST output file");
