@@ -22,11 +22,12 @@ class Lexer
     std::string_view m_regex;
     uint32_t m_position;
 
-    uint32_t getNameLength(uint32_t groupNameStartPos);
-    TokenType parseFourthCharInCaptureGroup(uint32_t& tokenLength);
-    TokenType parseThirdCharInCaptureGroup(uint32_t& tokenLength);
+    uint32_t getNameLength(uint32_t groupNameStartPos) const;
+    TokenType parseFourthCharInCaptureGroup(uint32_t& tokenLength) const;
+    TokenType parseThirdCharInCaptureGroup(uint32_t& tokenLength) const;
+    TokenType getCaptureGroupToken(uint32_t tokenLength) const;
 
 public:
-    void Initialize(std::string& inputRegex);
+    void Initialize(const std::string& inputRegex);
     Token GetNextToken();
 };

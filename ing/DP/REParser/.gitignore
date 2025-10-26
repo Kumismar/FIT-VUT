@@ -1,2 +1,3 @@
 build/
-.cache/\\asdasd
+.cache/
+.idea/

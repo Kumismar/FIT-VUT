@@ -7,6 +7,7 @@
 
 #include "Lexer.hpp"
 
+#include "LexicalError.hpp"
 #include "Token.hpp"
 
 #include <cctype>
@@ -15,9 +16,9 @@
 #include <string>
 #include <string_view>
 
-const uint32_t CLOSING_ANGLE_BRACKET_OFFSET = 1;
+constexpr uint32_t CLOSING_ANGLE_BRACKET_OFFSET = 1;
 
-uint32_t Lexer::getNameLength(uint32_t groupNameStartPos)
+uint32_t Lexer::getNameLength(uint32_t groupNameStartPos) const
 {
     uint32_t nameLength = 0;
     uint32_t currentPos = groupNameStartPos;
@@ -33,27 +34,22 @@ uint32_t Lexer::getNameLength(uint32_t groupNameStartPos)
 
         // Any alphanumeric symbol along with _ and $ are allowed
         if (!std::isalnum(currentChar) && currentChar != '_' && currentChar != '$') {
-            // TODO: Create solid exception system
-            throw std::runtime_error("Invalid character in capture group name");
+            throw LexicalError("Invalid character in capture group name at position " +
+                               std::to_string(currentPos) + " in regex");
         }
         nameLength++;
         currentPos++;
     }
 
     if (!foundClosingBracket) {
-        throw std::runtime_error("Unclosed group capture name");
+        throw LexicalError("Unclosed group capture name at position " + std::to_string(currentPos) +
+                           " in regex");
     }
 
     return nameLength;
 }
 
-void Lexer::Initialize(std::string& inputRegex)
-{
-    m_regex = inputRegex;
-    m_position = 0;
-}
-
-TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength)
+TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength) const
 {
     TokenType tokenType;
     const uint32_t fourthCharPos = m_position + 3;
@@ -79,7 +75,7 @@ TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength)
     return tokenType;
 }
 
-TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength)
+TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
 {
     TokenType tokenType;
     const uint32_t thirdCharPos = m_position + 2;
@@ -103,19 +99,49 @@ TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength)
         }
         case '<': {
             if (m_position + 3 >= m_regex.length()) {
-                throw std::runtime_error("Unfinished sequence '(?<' at the end of regex");
+                throw LexicalError("Unfinished sequence '(?<' at position" +
+                                   std::to_string(m_position + 2) + " in regex");
             }
 
             tokenType = parseFourthCharInCaptureGroup(tokenLength);
             break;
         }
         default: {
-            throw std::runtime_error("Invalid group indentifier");
+            throw LexicalError("Invalid group indentifier" + std::to_string(m_position + 1) +
+                               " in regex");
         }
     }
     return tokenType;
 }
 
+TokenType Lexer::getCaptureGroupToken(uint32_t tokenLength) const
+{
+    TokenType tokenType;
+    if (m_position + 1 >= m_regex.length()) {
+        // If '(' is present in the end of regex, we pass it to parser as valid token and
+        // let the parser throw an error
+        return TokenType::GROUP_START;
+    }
+
+    const uint32_t secondCharPos = m_position + 1;
+
+    char secondChar = m_regex[secondCharPos];
+    if (secondChar != '?') {
+        return TokenType::GROUP_START;
+    }
+
+    if (m_position + 2 >= m_regex.length()) {
+        throw LexicalError("Unfinished sequence '(?' at the end of regex");
+    }
+
+    return parseThirdCharInCaptureGroup(tokenLength);
+}
+
+void Lexer::Initialize(const std::string& inputRegex)
+{
+    m_regex = inputRegex;
+    m_position = 0;
+}
 Token Lexer::GetNextToken()
 {
     if (m_position >= m_regex.length()) {
@@ -154,27 +180,10 @@ Token Lexer::GetNextToken()
             break;
         }
         case '(': {
-            if (m_position + 1 >= m_regex.length()) {
-                // If '(' is present in the end of regex, we pass it to parser as valid token and
-                // let the parser throw an error
-                tokenType = TokenType::GROUP_START;
-                break;
-            }
-
-            const uint32_t secondCharPos = m_position + 1;
-
-            char secondChar = m_regex[secondCharPos];
-            if (secondChar != '?') {
-                tokenType = TokenType::GROUP_START;
-                break;
-            }
-
-            if (m_position + 2 >= m_regex.length()) {
-                throw std::runtime_error("Unfinished sequence '(?' at the end of regex");
-            }
-
-            tokenType = parseThirdCharInCaptureGroup(tokenLength);
+            tokenType = getCaptureGroupToken(tokenLength);
             break;
+        }
+        case '[': {
         }
         default: {
             tokenType = TokenType::LITERAL;
