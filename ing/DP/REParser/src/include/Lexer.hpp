@@ -27,7 +27,7 @@ class Lexer
     TokenType parseFourthCharInCaptureGroup(uint32_t& tokenLength) const;
     TokenType parseThirdCharInCaptureGroup(uint32_t& tokenLength) const;
     TokenType getCaptureGroupToken(uint32_t& tokenLength) const;
-    TokenType getEscapeSequenceToken(uint32_t& tokenLength);
+    TokenType getEscapeSequenceToken(uint32_t& tokenLength) const;
     TokenType getStandardTokenType(uint32_t& tokenLength, char currentChar);
 
 public:

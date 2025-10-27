@@ -10,13 +10,19 @@
 #include "LexicalError.hpp"
 #include "Token.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdint>
-#include <stdexcept>
 #include <string>
 #include <string_view>
 
 constexpr uint32_t CLOSING_ANGLE_BRACKET_OFFSET = 1;
+constexpr uint32_t BACKSLASH_OFFSET = 1;
+constexpr uint32_t NAMED_BACKREF_START_OFFSET = 3;
+constexpr uint32_t HEX_SEQUENCE_LENGTH = 3;
+constexpr uint32_t CONTROL_SEQUENCE_LENGTH = 1;
+constexpr uint32_t NAMED_BACKREF_MINIMAL_LENGTH = 4;
+constexpr uint32_t NEXT_CHAR_POSITION = 1;
 
 uint32_t Lexer::getNameLength(uint32_t groupNameStartPos) const
 {
@@ -33,7 +39,8 @@ uint32_t Lexer::getNameLength(uint32_t groupNameStartPos) const
         }
 
         // Any alphanumeric symbol along with _ and $ are allowed
-        if (!std::isalnum(currentChar) && currentChar != '_' && currentChar != '$') {
+        if (!std::isalnum(static_cast<unsigned char>(currentChar)) && currentChar != '_' &&
+            currentChar != '$') {
             throw LexicalError("Invalid character in capture group name at position " +
                                std::to_string(currentPos) + " in regex");
         }
@@ -77,6 +84,8 @@ TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength) const
 
 TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
 {
+#include <stdexcept>
+
     TokenType tokenType;
     const uint32_t thirdCharPos = m_position + 2;
     const char thirdChar = m_regex[thirdCharPos];
@@ -138,9 +147,9 @@ TokenType Lexer::getCaptureGroupToken(uint32_t& tokenLength) const
     return parseThirdCharInCaptureGroup(tokenLength);
 }
 
-TokenType Lexer::getEscapeSequenceToken(uint32_t& tokenLength)
+TokenType Lexer::getEscapeSequenceToken(uint32_t& tokenLength) const
 {
-    if (m_position + 1 >= m_regex.length()) {
+    if (m_position + NEXT_CHAR_POSITION >= m_regex.length()) {
         throw LexicalError("Unfinished escape sequence at the end of regex");
     }
 
@@ -178,32 +187,89 @@ TokenType Lexer::getEscapeSequenceToken(uint32_t& tokenLength)
 
         // Hexadecimal and unicode escape sequence
         case 'x': {
-            // 'xHH'
-            // Bude potřeba přečíst další 2 znaky a upravit tokenLength na 4.
-            // Prozatím můžeme vrátit LITERAL.
-            tokenLength = 4;  // Musíš zkontrolovat, jestli máš 2 další znaky!
+            if (m_position + HEX_SEQUENCE_LENGTH >= m_regex.length()) {
+                throw LexicalError("Unfinished hexadecimal escape sequence at the end of regex");
+            }
+
+            const char firstHexDigit = m_regex[m_position + 2];
+            const char secondHexDigit = m_regex[m_position + 3];
+
+            if (!std::isxdigit(static_cast<unsigned char>(firstHexDigit)) ||
+                !std::isxdigit(static_cast<unsigned char>(secondHexDigit))) {
+                throw LexicalError("Invalid hexadecimal escape sequence");
+            }
+
+            tokenLength = 4;
             return TokenType::LITERAL;
         }
         case 'u': {
             // 'xHHHH' or 'x{...}'
-            // Extrémně složitá logika parsování.
-            // Prozatím můžeme vrátit LITERAL.
+            // TODO: parsing unicode escape sekvencí
             return TokenType::LITERAL;
         }
 
         // Control + [A-Z] characters
         case 'c': {
-            // Bude potřeba přečíst další 1 znak a upravit tokenLength na 3.
-            tokenLength = 3;  // Musíš zkontrolovat, jestli máš další znak!
+            if (m_position + CONTROL_SEQUENCE_LENGTH >= m_regex.length()) {
+                throw LexicalError("Unfinished control escape sequence at the end of regex");
+            }
+
+            const char controlChar = m_regex[m_position + 1];
+
+            // Only [A-Z] characters allowed
+            if (!std::isupper(static_cast<unsigned char>(controlChar))) {
+                throw LexicalError("Invalid control escape sequence");
+            }
+
+            tokenLength = 3;
             return TokenType::LITERAL;
         }
 
         // Backreferences
         case 'k': {
-            // TODO: Zpracování pojmenované zpětné reference '\k<name>'
-            // Bude potřeba parsovat jméno v závorkách.
-            // tokenLength bude 3 + délka jména + 1.
-            return TokenType::NAMED_BACKREFERENCE;  // Nebo podobný token
+            // '\k<name>' ---> tokenLength = 3 + len(name) + 1, where name is nonempty string
+            // ---> at least 5 chars in total, further checks done when resolving name
+            // currently at '\' ---> 4 more at least to go
+            if (m_position + NAMED_BACKREF_MINIMAL_LENGTH >= m_regex.length()) {
+                throw LexicalError("Invalid named backreference at the end of regex");
+            }
+
+            const char openBracketChar = m_regex[m_position + 2];
+            if (openBracketChar != '<') {
+                throw LexicalError("Missing open angle bracket in named back reference");
+            }
+
+            const uint32_t nameStartPos = m_position + 3;
+            uint32_t nameLength = 0;
+            bool foundClosingBracket = false;
+
+            // Go through the back reference name char by char and count the length of it.
+            for (uint32_t currentPos = nameStartPos; currentPos < m_regex.length(); currentPos++) {
+                const char currentNameChar = m_regex[currentPos];
+
+                if (currentNameChar == '>') {
+                    foundClosingBracket = true;
+                    break;
+                }
+
+                if (!std::isalnum(static_cast<unsigned char>(currentNameChar)) &&
+                    currentNameChar != '_' && currentNameChar != '$') {
+                    throw LexicalError("Invalid character in back reference name");
+                }
+
+                nameLength++;
+            }
+
+            if (!foundClosingBracket) {
+                throw LexicalError("Unclosed back reference name");
+            }
+
+            if (nameLength == 0) {
+                throw LexicalError("Empty back reference name");
+            }
+
+            tokenLength = NAMED_BACKREF_START_OFFSET + nameLength + CLOSING_ANGLE_BRACKET_OFFSET;
+            return TokenType::NAMED_BACKREFERENCE;
         }
         case '1':
         case '2':
@@ -214,8 +280,17 @@ TokenType Lexer::getEscapeSequenceToken(uint32_t& tokenLength)
         case '7':
         case '8':
         case '9': {
-            // TODO: Zpracování zpětné reference (může být víceciferná)
-            // Tohle NENÍ literál, je to speciální token.
+            uint32_t numOfDigits = 1;
+            const uint32_t startPos = m_position + 2;
+            uint32_t currentPos = startPos;
+
+            for (currentPos < m_regex.length() &&
+                 std::isdigit(static_cast<unsigned char>(m_regex[currentPos]))) {
+                numOfDigits++;
+                currentPos++;
+            }
+
+            tokenLength = numOfDigits + BACKSLASH_OFFSET;
             return TokenType::BACKREFERENCE;
         }
 
@@ -270,10 +345,6 @@ TokenType Lexer::getStandardTokenType(uint32_t& tokenLength, const char currentC
             m_inCharClass = true;
             return TokenType::CHAR_CLASS_START;
         }
-        case ']': {
-            m_inCharClass = false;
-            return TokenType::CHAR_CLASS_END;
-        }
         default: {
             return TokenType::LITERAL;
         }
@@ -285,6 +356,7 @@ void Lexer::Initialize(const std::string& inputRegex)
     m_regex = inputRegex;
     m_position = 0;
 }
+
 Token Lexer::GetNextToken()
 {
     if (m_position >= m_regex.length()) {
@@ -292,12 +364,13 @@ Token Lexer::GetNextToken()
     }
 
     const char* tokenStart = &m_regex[m_position];
-    char currentChar = *tokenStart;
+    const char currentChar = *tokenStart;
 
-    TokenType tokenType;
+    TokenType tokenType = TokenType::END_OF_INPUT;
     uint32_t tokenLength = 1;
 
     if (m_inCharClass) {
+        // TODO: zpracovani trid znaku
     }
     else {
         tokenType = getStandardTokenType(tokenLength, currentChar);
