@@ -25,7 +25,7 @@ uint32_t Lexer::getNameLength(uint32_t groupNameStartPos) const
     bool foundClosingBracket = false;
 
     while (currentPos < m_regex.length()) {
-        char currentChar = m_regex[currentPos];
+        const char currentChar = m_regex[currentPos];
 
         if (currentChar == '>') {
             foundClosingBracket = true;
@@ -53,7 +53,7 @@ TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength) const
 {
     TokenType tokenType;
     const uint32_t fourthCharPos = m_position + 3;
-    char fourthChar = m_regex[fourthCharPos];
+    const char fourthChar = m_regex[fourthCharPos];
 
     switch (fourthChar) {
         case '=': {
@@ -79,7 +79,7 @@ TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
 {
     TokenType tokenType;
     const uint32_t thirdCharPos = m_position + 2;
-    char thirdChar = m_regex[thirdCharPos];
+    const char thirdChar = m_regex[thirdCharPos];
 
     switch (thirdChar) {
         case ':': {
@@ -114,9 +114,8 @@ TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
     return tokenType;
 }
 
-TokenType Lexer::getCaptureGroupToken(uint32_t tokenLength) const
+TokenType Lexer::getCaptureGroupToken(uint32_t& tokenLength) const
 {
-    TokenType tokenType;
     if (m_position + 1 >= m_regex.length()) {
         // If '(' is present in the end of regex, we pass it to parser as valid token and
         // let the parser throw an error
@@ -125,8 +124,10 @@ TokenType Lexer::getCaptureGroupToken(uint32_t tokenLength) const
 
     const uint32_t secondCharPos = m_position + 1;
 
-    char secondChar = m_regex[secondCharPos];
+    const char secondChar = m_regex[secondCharPos];
     if (secondChar != '?') {
+        // When '?' is not the second character, then we treat '(' as start of group and next
+        // character is inside the group, thus the token has length 1
         return TokenType::GROUP_START;
     }
 
@@ -135,6 +136,148 @@ TokenType Lexer::getCaptureGroupToken(uint32_t tokenLength) const
     }
 
     return parseThirdCharInCaptureGroup(tokenLength);
+}
+
+TokenType Lexer::getEscapeSequenceToken(uint32_t& tokenLength)
+{
+    if (m_position + 1 >= m_regex.length()) {
+        throw LexicalError("Unfinished escape sequence at the end of regex");
+    }
+
+    const char secondChar = m_regex[m_position + 1];
+    tokenLength = 2;
+
+    switch (secondChar) {
+        // Character classes
+        case 'd': {
+            return TokenType::DIGIT_CLASS;
+        }
+        case 'D': {
+            return TokenType::NON_DIGIT_CLASS;
+        }
+        case 'w': {
+            return TokenType::WORD_CHAR_CLASS;
+        }
+        case 'W': {
+            return TokenType::NON_WORD_CHAR_CLASS;
+        }
+        case 's': {
+            return TokenType::WHITESPACE_CLASS;
+        }
+        case 'S': {
+            return TokenType::NON_WHITESPACE_CLASS;
+        }
+
+        // Anchors
+        case 'b': {
+            return TokenType::ANCHOR_WORD_BOUNDARY;
+        }
+        case 'B': {
+            return TokenType::ANCHOR_NONWORD_BOUNDARY;
+        }
+
+        // Hexadecimal and unicode escape sequence
+        case 'x': {
+            // 'xHH'
+            // Bude potřeba přečíst další 2 znaky a upravit tokenLength na 4.
+            // Prozatím můžeme vrátit LITERAL.
+            tokenLength = 4;  // Musíš zkontrolovat, jestli máš 2 další znaky!
+            return TokenType::LITERAL;
+        }
+        case 'u': {
+            // 'xHHHH' or 'x{...}'
+            // Extrémně složitá logika parsování.
+            // Prozatím můžeme vrátit LITERAL.
+            return TokenType::LITERAL;
+        }
+
+        // Control + [A-Z] characters
+        case 'c': {
+            // Bude potřeba přečíst další 1 znak a upravit tokenLength na 3.
+            tokenLength = 3;  // Musíš zkontrolovat, jestli máš další znak!
+            return TokenType::LITERAL;
+        }
+
+        // Backreferences
+        case 'k': {
+            // TODO: Zpracování pojmenované zpětné reference '\k<name>'
+            // Bude potřeba parsovat jméno v závorkách.
+            // tokenLength bude 3 + délka jména + 1.
+            return TokenType::NAMED_BACKREFERENCE;  // Nebo podobný token
+        }
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9': {
+            // TODO: Zpracování zpětné reference (může být víceciferná)
+            // Tohle NENÍ literál, je to speciální token.
+            return TokenType::BACKREFERENCE;
+        }
+
+        default: {
+            // This branch includes:
+            // - Escaped meta characters: '\*', '\+', '\?', '\(', '\[', '\{', '\.', '\\', etc.
+            // - Special characters: '\f', '\n', '\r', '\t', '\v', '\0'
+            // - Unknown escape sequences, e.g. '\a', '\z', that mean 'a', 'z', etc.
+            // All of them are literals of length 2
+            return TokenType::LITERAL;
+        }
+    }
+}
+
+TokenType Lexer::getStandardTokenType(uint32_t& tokenLength, const char currentChar)
+{
+    switch (currentChar) {
+        case '*': {
+            return TokenType::QUANT_STAR;
+        }
+        case '+': {
+            return TokenType::QUANT_PLUS;
+        }
+        case '?': {
+            return TokenType::QUANT_QUESTION_MARK;
+        }
+        case '{': {
+            return TokenType::QUANT_BRACE_START;
+        }
+        case '}': {
+            return TokenType::QUANT_BRACE_END;
+        }
+        case '.': {
+            return TokenType::DOT;
+        }
+        case '|': {
+            return TokenType::ALTERNATION;
+        }
+        case '^': {
+            return TokenType::ANCHOR_START;
+        }
+        case '$': {
+            return TokenType::ANCHOR_END;
+        }
+        case '(': {
+            return getCaptureGroupToken(tokenLength);
+        }
+        case '\\': {
+            return getEscapeSequenceToken(tokenLength);
+        }
+        case '[': {
+            m_inCharClass = true;
+            return TokenType::CHAR_CLASS_START;
+        }
+        case ']': {
+            m_inCharClass = false;
+            return TokenType::CHAR_CLASS_END;
+        }
+        default: {
+            return TokenType::LITERAL;
+        }
+    }
 }
 
 void Lexer::Initialize(const std::string& inputRegex)
@@ -154,41 +297,10 @@ Token Lexer::GetNextToken()
     TokenType tokenType;
     uint32_t tokenLength = 1;
 
-    switch (currentChar) {
-        case '*': {
-            tokenType = TokenType::QUANT_STAR;
-            break;
-        }
-        case '+': {
-            tokenType = TokenType::QUANT_PLUS;
-            break;
-        }
-        case '?': {
-            tokenType = TokenType::QUANT_QUESTION_MARK;
-            break;
-        }
-        case '{': {
-            tokenType = TokenType::QUANT_BRACE_START;
-            break;
-        }
-        case '}': {
-            tokenType = TokenType::QUANT_BRACE_END;
-            break;
-        }
-        case '.': {
-            tokenType = TokenType::DOT;
-            break;
-        }
-        case '(': {
-            tokenType = getCaptureGroupToken(tokenLength);
-            break;
-        }
-        case '[': {
-        }
-        default: {
-            tokenType = TokenType::LITERAL;
-            break;
-        }
+    if (m_inCharClass) {
+    }
+    else {
+        tokenType = getStandardTokenType(tokenLength, currentChar);
     }
 
     m_position += tokenLength;
