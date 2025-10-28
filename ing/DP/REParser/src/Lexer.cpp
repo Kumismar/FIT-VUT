@@ -284,8 +284,8 @@ TokenType Lexer::getEscapeSequenceToken(uint32_t& tokenLength) const
             const uint32_t startPos = m_position + 2;
             uint32_t currentPos = startPos;
 
-            for (currentPos < m_regex.length() &&
-                 std::isdigit(static_cast<unsigned char>(m_regex[currentPos]))) {
+            while (currentPos < m_regex.length() &&
+                   std::isdigit(static_cast<unsigned char>(m_regex[currentPos]))) {
                 numOfDigits++;
                 currentPos++;
             }
