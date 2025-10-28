@@ -69,7 +69,7 @@ BraceWrapping:
   AfterObjCDeclaration: false
   AfterStruct: true
   AfterUnion: true
-  BeforeCatch: false
+  BeforeCatch: true
   BeforeElse: true
   BeforeLambdaBody: false
   BeforeWhile: false
