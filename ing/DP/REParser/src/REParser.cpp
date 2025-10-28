@@ -22,5 +22,9 @@ REParser::REParser(std::string& inputRegex, std::ofstream& outputFile)
 
 ASTNodePtr REParser::Parse()
 {
+    Token token = m_lexer.GetNextToken();
+    while (token.type != TokenType::END_OF_INPUT) {
+        token = m_lexer.GetNextToken();
+    }
     return std::make_shared<ASTNode>();
 }
