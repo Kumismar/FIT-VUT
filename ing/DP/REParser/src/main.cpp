@@ -7,6 +7,7 @@
 
 #include "CLI11.hpp"
 #include "REParser.hpp"
+#include "REParserException.hpp"
 
 #include <cstdlib>
 #include <fstream>
@@ -16,7 +17,7 @@ int main(int argc, char** argv)
 {
     CLI::App app { "Regular expression parser with AST" };
 
-    std::string inputFileName;asd====123e
+    std::string inputFileName;
     app.add_option<std::string>("-i", inputFileName, "Input file");
     std::string outputFileName;
     app.add_option<std::string>("-o", outputFileName, "AST output file");
@@ -42,8 +43,9 @@ int main(int argc, char** argv)
     try {
         REParser parser(stringRegex, outputFile);
         parser.Parse();
-    } catch (const std::exception& e) {
-        std::cerr << "A problem occured during parsing:" << e.what() << std::endl;
+    }
+    catch (const REParserException& e) {
+        std::cerr << "A problem occured during parsing: " << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 
