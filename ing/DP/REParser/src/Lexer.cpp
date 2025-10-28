@@ -43,15 +43,15 @@ uint32_t Lexer::getNameLength(const uint32_t groupNameStartPos) const
         if (!std::isalnum(static_cast<unsigned char>(currentChar)) && currentChar != '_' &&
             currentChar != '$') {
             throw LexicalError("Invalid character in capture group name at position " +
-                               std::to_string(currentPos) + " in regex");
+                               std::to_string(currentPos + 1) + " in regex");
         }
         nameLength++;
         currentPos++;
     }
 
     if (!foundClosingBracket) {
-        throw LexicalError("Unclosed group capture name at position " + std::to_string(currentPos) +
-                           " in regex");
+        throw LexicalError("Unclosed group capture name at position " +
+                           std::to_string(currentPos + 1) + " in regex");
     }
 
     return nameLength;
@@ -108,7 +108,7 @@ TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
         case '<': {
             if (m_position + 3 >= m_regex.length()) {
                 throw LexicalError("Unfinished sequence '(?<' at position" +
-                                   std::to_string(m_position + 2) + " in regex");
+                                   std::to_string(m_position + 3) + " in regex");
             }
 
             tokenType = parseFourthCharInCaptureGroup(tokenLength);
@@ -116,7 +116,7 @@ TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
         }
         default: {
             throw LexicalError("Invalid group indentifier at position" +
-                               std::to_string(m_position + 1) + " in regex");
+                               std::to_string(m_position + 2) + " in regex");
         }
     }
     return tokenType;
@@ -157,7 +157,8 @@ void Lexer::validateHexEscapeSequence(uint32_t& tokenLength) const
 
     if (!std::isxdigit(static_cast<unsigned char>(firstHexDigit)) ||
         !std::isxdigit(static_cast<unsigned char>(secondHexDigit))) {
-        throw LexicalError("Invalid hexadecimal escape sequence");
+        throw LexicalError("Invalid hexadecimal escape sequence at position " +
+                           std::to_string(m_position + 2) + " in regex");
     }
 
     tokenLength = 4;
@@ -175,11 +176,12 @@ void Lexer::validateControlEscapeSequence(uint32_t& tokenLength) const
         throw LexicalError("Unfinished control escape sequence at the end of regex");
     }
 
-    const char controlChar = m_regex[m_position + 1];
+    const char controlChar = m_regex[m_position + 2];
 
     // Only [A-Z] characters allowed
     if (!std::isupper(static_cast<unsigned char>(controlChar))) {
-        throw LexicalError("Invalid control escape sequence");
+        throw LexicalError("Invalid control escape sequence at position " +
+                           std::to_string(m_position + 2));
     }
 
     tokenLength = 3;
@@ -196,7 +198,8 @@ void Lexer::validateNamedBackReference(uint32_t& tokenLength) const
 
     const char openBracketChar = m_regex[m_position + 2];
     if (openBracketChar != '<') {
-        throw LexicalError("Missing open angle bracket in named back reference");
+        throw LexicalError("Missing open angle bracket in named back reference at position " +
+                           std::to_string(m_position + 3) + " in regex");
     }
 
     const uint32_t nameStartPos = m_position + 3;
@@ -214,18 +217,20 @@ void Lexer::validateNamedBackReference(uint32_t& tokenLength) const
 
         if (!std::isalnum(static_cast<unsigned char>(currentNameChar)) && currentNameChar != '_' &&
             currentNameChar != '$') {
-            throw LexicalError("Invalid character in back reference name");
+            throw LexicalError("Invalid character in back reference name at position " +
+                               std::to_string(currentPos + 1) + " in regex");
         }
 
         nameLength++;
     }
 
     if (!foundClosingBracket) {
-        throw LexicalError("Unclosed back reference name");
+        throw LexicalError("Unclosed back reference name at the end of regex");
     }
 
     if (nameLength == 0) {
-        throw LexicalError("Empty back reference name");
+        throw LexicalError("Empty back reference name at position " +
+                           std::to_string(nameStartPos + 1) + " in regex");
     }
 
     tokenLength = NAMED_BACKREF_START_OFFSET + nameLength + CLOSING_ANGLE_BRACKET_OFFSET;
