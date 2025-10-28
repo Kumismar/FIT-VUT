@@ -6,8 +6,8 @@
  */
 
 #include "CLI11.hpp"
-#include "REParser.hpp"
 #include "REParserException.hpp"
+#include "parser.hpp"
 
 #include <cstdlib>
 #include <fstream>

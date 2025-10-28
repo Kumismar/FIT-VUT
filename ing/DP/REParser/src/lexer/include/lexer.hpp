@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "Token.hpp"
+#include "token.hpp"
 
 #include <cstdint>
 #include <memory>

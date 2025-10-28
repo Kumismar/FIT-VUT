@@ -8,7 +8,7 @@
 #pragma once
 
 #include "ASTNode.hpp"
-#include "Lexer.hpp"
+#include "lexer.hpp"
 
 #include <fstream>
 #include <memory>

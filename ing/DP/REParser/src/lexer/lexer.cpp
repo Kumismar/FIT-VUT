@@ -5,10 +5,10 @@
  * @Description: Implemenation of the Lexer class methods.
  */
 
-#include "Lexer.hpp"
+#include "lexer.hpp"
 
 #include "LexicalError.hpp"
-#include "Token.hpp"
+#include "token.hpp"
 
 #include <string>
 #include <string_view>
@@ -510,7 +510,7 @@ Token Lexer::GetNextToken()
     const char* tokenStart = &m_regex[m_position];
     const char currentChar = *tokenStart;
 
-    TokenType tokenType = TokenType::END_OF_INPUT;
+    TokenType tokenType;
     uint32_t tokenLength = 1;
 
     if (m_inCharClass) {
