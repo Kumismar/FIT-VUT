@@ -4,7 +4,8 @@
 class REParserException
 {
 public:
-    virtual ~REParserException();
+    virtual ~REParserException() = default;
+
     std::string what() const noexcept
     {
         return m_message;

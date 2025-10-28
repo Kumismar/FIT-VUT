@@ -8,4 +8,6 @@ public:
     {
         m_message = "Lexical Error: " + message;
     }
+
+    ~LexicalError() override = default;
 };
