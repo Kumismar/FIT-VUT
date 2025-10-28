@@ -9,5 +9,4 @@
 TEST(LexerTest, IdkIdc)
 {
     EXPECT_EQ(7 * 6, 42);
-    std::vectorector<>
 }
