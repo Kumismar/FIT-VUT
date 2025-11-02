@@ -256,6 +256,9 @@ TokenType Lexer::getStandardTokenType(uint32_t& tokenLength, const char currentC
         case '(': {
             return getCaptureGroupToken(tokenLength);
         }
+        case ')': {
+            return TokenType::GROUP_END;
+        }
         case '\\': {
             return getEscapeSequenceToken(tokenLength);
         }
