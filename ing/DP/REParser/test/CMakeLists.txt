@@ -1,19 +1,19 @@
 include(FetchContent)
 FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG v1.17.0
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.6.0
 )
-FetchContent_MakeAvailable(googletest)
+FetchContent_MakeAvailable(Catch2)
 
 add_executable(REParserTest)
 
 add_subdirectory(unit_tests)
 
 target_link_libraries(REParserTest PRIVATE
-        GTest::gtest_main
+        Catch2::Catch2WithMain
         REParserLib
 )
 
-include(GoogleTest)
-gtest_discover_tests(REParserTest)
+include(Catch)
+catch_discover_tests(REParserTest)
