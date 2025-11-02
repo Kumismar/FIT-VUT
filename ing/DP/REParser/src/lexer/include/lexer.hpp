@@ -20,19 +20,14 @@ using LexerPtr = std::shared_ptr<Lexer>;
 class Lexer
 {
     std::string_view m_regex;
-    uint32_t m_position;
+    uint32_t m_position = 0;
     bool m_inCharClass = false;
 
     uint32_t getNameLength(uint32_t groupNameStartPos) const;
     TokenType parseFourthCharInCaptureGroup(uint32_t& tokenLength) const;
     TokenType parseThirdCharInCaptureGroup(uint32_t& tokenLength) const;
     TokenType getCaptureGroupToken(uint32_t& tokenLength) const;
-    void validateHexEscapeSequence(uint32_t& tokenLength) const;
-    void validateUnicodeEscapeSequence(uint32_t& tokenLength) const;
-    void validateControlEscapeSequence(uint32_t& tokenLength) const;
-    void validateNamedBackReference(uint32_t& tokenLength) const;
-    void validateBackReference(uint32_t& tokenLength) const;
-    void validateOctalEscapeSequence(uint32_t& tokenLength) const;
+
     TokenType getEscapeSequenceToken(uint32_t& tokenLength) const;
     TokenType getStandardTokenType(uint32_t& tokenLength, char currentChar);
     TokenType getCharClassEscapeSequenceToken(uint32_t& tokenLength) const;
