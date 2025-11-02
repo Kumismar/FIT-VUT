@@ -48,7 +48,7 @@ uint32_t Lexer::getNameLength(const uint32_t groupNameStartPos) const
     return nameLength;
 }
 
-TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength) const
+inline TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength) const
 {
     TokenType tokenType;
     const uint32_t fourthCharPos = m_position + 3;
@@ -74,7 +74,7 @@ TokenType Lexer::parseFourthCharInCaptureGroup(uint32_t& tokenLength) const
     return tokenType;
 }
 
-TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
+inline TokenType Lexer::parseThirdCharInCaptureGroup(uint32_t& tokenLength) const
 {
     TokenType tokenType;
     const uint32_t thirdCharPos = m_position + 2;
@@ -338,10 +338,10 @@ TokenType Lexer::getTokenTypeFromCharClass(uint32_t& tokenLength, const char cur
             return TokenType::CHAR_CLASS_END;
         }
         case '-': {
-            return TokenType::CHAR_CLASS_HYPHEN;
+            return TokenType::CHAR_CLASS_RANGE;
         }
         case '^': {
-            return TokenType::CHAR_CLASS_CARET;
+            return TokenType::CHAR_CLASS_NEGATION;
         }
         case '\\': {
             return getCharClassEscapeSequenceToken(tokenLength);

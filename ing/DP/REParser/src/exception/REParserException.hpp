@@ -11,6 +11,11 @@ public:
         return m_message;
     }
 
+    operator std::string() const noexcept
+    {
+        return what();
+    }
+
 protected:
     std::string m_message;
 };
