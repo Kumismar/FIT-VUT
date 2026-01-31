@@ -1,0 +1,409 @@
+\documentclass[a4paper, 11pt]{article}
+
+\usepackage[text={15cm, 23cm}]{geometry}
+\usepackage[czech]{babel}
+\usepackage{fontspec}
+\usepackage{newcomputermodern}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{biblatex}
+\usepackage{booktabs}
+
+\newtheorem{theorem}{Věta}
+
+\linespread{1.05}
+
+\addbibresource{xkouma02.bib}
+
+\begin{document}
+
+\begin{titlepage}
+    \begin{center}
+        {\Huge
+            \textsc{Vysoké Učení Technické v Brně}\\[0.5em]}
+        {\huge
+            \textsc{Fakulta Informačních Technologií}}\\
+        \vspace{\stretch{0.382}}
+        {\LARGE
+            Teorie her -- technická zpráva\\[0.8em]
+            \textbf{Induktivní důkaz Arrowova teorému s využitím SAT solveru}}\\[2em]
+        \Large\today\\
+        \vspace{\stretch{0.618}}
+    \end{center}
+    {\Large
+    Bc. Ondřej Koumar\hfill\href{mailto:xkouma02@stud.fit.vutbr.cz}{xkouma02@stud.fit.vutbr.cz}}
+\end{titlepage}
+
+\section{Úvod}\label{sec:Introduction}
+
+Cílem tohoto projektu je prakticky si vyzkoušet \emph{computer-aided proof} impossibility teorému z~teorie her, konkrétně Arrowova teorému.
+Namísto klasického čistě matematického důkazu se zaměřujeme na kombinaci induktivního argumentu a~automatického ověřování bázového kroku pomocí SAT solveru.
+
+Arrowův teorém je příkladem tvrzení, jehož důkaz vyžaduje hodně mechanické práce kvůli kombinatorické explozi problému.
+Induktivní kroky lze odvodit poměrně elegantně, ale samotný bázový případ vyžaduje systematické procházení velkého prostoru možností.
+Tuto mechanickou část práce zanecháme počítači.
+
+Hlavní myšlenkou projektu je převést axiomy Arrowova teorému pro konečný počet voličů a~alternativ do formule výrokové logiky a~ověřit její splnitelnost pomocí SAT solveru.
+Nesplnitelnost takové formule odpovídá neexistenci \emph{funkce společenského blahobytu} splňující všechny dané axiomy.
+
+Nejprve stručně představíme Arrowův teorém a~použitou notaci.
+Poté popíšeme induktivní krok důkazu, který umožňuje redukovat obecný případ na bázovou instanci se dvěma voliči a~třemi alternativami.
+Následně se zaměříme na samotný převod tohoto bázového případu do CNF formule a~na její řešení pomocí SAT solveru.
+Na závěr jsou uvedeny experimentální výsledky, včetně diskuse o~škálování a~výpočetní náročnosti celého přístupu.
+
+
+\section{Formální definice Arrowova teorému}
+
+V~této sekci zavedeme základní notaci pro voliče, alternativy a~preference.
+
+\subsection{Základní notace}
+
+Nechť $A$ je konečná množina \emph{alternativ} (kandidátů), kde $|A| \ge 3$.
+Dále mějme množinu \emph{voličů} (agentů), kterou označíme $Q$, o~velikosti $n$ (kde $n \ge 2$).
+
+Prostor všech možných uspořádání na množině $A$ (permutací) označíme $\mathcal{R}$.
+Každý volič $i \in Q$ má svou preferenci, kterou modelujeme jako relaci na $A$.
+Používáme následující značení pro vztah dvou alternativ $x, y \in A$ z~pohledu voliče $i$:
+\begin{itemize}
+    \item $x \succeq_i y$: Volič $i$ preferuje $x$ před $y$ nebo je mezi nimi lhostejný (slabá preference).
+    \item $x \succ_i y$: Volič $i$ striktně preferuje $x$ před $y$.
+\end{itemize}
+My se budeme především zaměřovat na striktní preferenci.
+
+\emph{Profil preferencí} $\rho$ je uspořádaná $n$-tice preferencí všech voličů:
+\[
+    \rho = (R^1, R^2, \dots, R^n) \in \mathcal{R}^n
+\]
+kde $R^i$ reprezentuje uspořádání $i$-tého voliče v~daném profilu.
+
+Cílem je nalézt \emph{funkci společenského blahobytu} (Social Welfare Function) $F$.
+Tato funkce agreguje preference voličů do jedné společenské preference:
+\[
+    F \colon \mathcal{R}^n \to \mathcal{R}
+\]
+Výslednou preferenci společnosti pro profil $\rho$ značíme jednoduše jako $x \succeq y$ (resp. $x \succ y$), což znamená, že společnost (podle pravidel mechanismu $F$) hodnotí $x$ alespoň tak dobře jako $y$.
+
+\subsection{Axiomy Arrowova teorému}
+
+Arrowův teorém zkoumá existenci funkce $F$, která by splňovala následující tři podmínky:
+
+\begin{enumerate}
+    \item \emph{Slabá Pareto optimalita}: Pokud všichni voliči striktně preferují alternativu $a$ před $b$, musí i~společnost striktně preferovat $a$ před $b$.
+          Formálně:
+          \[
+              \forall a, b \in A \colon (\forall i \in Q \colon a \succ_i b) \implies a \succ b
+          \]
+    \item \emph{Nezávislost na irelevantních alternativách (IIA)}: Společenské uspořádání mezi $a$ a~$b$ závisí pouze na individuálních preferencích mezi těmito dvěma alternativami.
+          Tedy, pokud voliči jednotlivě preferují $a$ nad $b$, výsledná společenská preference by s~tímto měla být konzistentní.
+          Formálně, pro libovolné dva profily $\rho, \rho' \in \mathcal{R}^n$ platí:
+          \begin{align*}
+              \forall a, b & \in A\colon                                                                                                       \\
+                           & \left[\forall i \in Q \colon (a \succeq_i b \iff a \succeq'_i b) \land (b \succeq_i a \iff b \succeq'_i a)\right] \\
+                           & \implies (a \succeq b \iff a \succeq' b)
+          \end{align*}
+    \item \emph{Nediktátorství}: Neexistuje volič, jehož striktní preference by se vždy stala striktní preferencí společnosti, bez ohledu na názory ostatních.
+          Formálně požadujeme, aby neexistoval $d \in N$ takový, že:
+          \[
+              \forall a, b \in A, \forall \rho \in \mathcal{R}^n \colon a \succ_d b \implies a \succ b
+          \]
+\end{enumerate}
+
+\subsection{Znění teorému}
+
+\begin{theorem}
+    Pokud počet alternativ $|A| \ge 3$ a~počet voličů $|Q| \ge 2$, pak neexistuje žádná funkce společenského blahobytu $F$, která je současně tranzitivní, slabě Pareto optimální, nezávislá na irelevantních alternativách a~nediktátorská.
+\end{theorem}
+
+Jinými slovy, aby mechanismus uměl s~libovolnými preferencemi voličů (včetně remíz), byl Pareto efektivní a~nezávislý na irelevantních alternativách, musí být diktátorský.
+
+\section{Induktivní krok důkazu}
+
+Tradiční matematická indukce obvykle postupuje od menšího k~většímu (tj. dokážeme pro $n$ a~z~toho plyne $n+1$).
+V~případě \emph{impossibility} teorémů v~teorii her je ale výhodnější postupovat opačným směrem, respektive dokázat, že pokud teorém platí pro $n$, tak po redukci platí i~pro $n-1$.
+Vznikne tak implikace:
+\[
+    \text{platí pro } n \implies \text{platí pro } n-1
+\]
+a~postupnou redukcí se dostaneme až k~implikaci
+\[
+    \text{platí pro } n \implies \text{platí pro } k,
+\]
+kde $k$ je určitá konstanta.
+Pro spor budeme předpokládat, že premisa platí, tím pádem musí platit i~důsledek, který bude následně vyvrácen, čímž je důkaz zkompletován.
+
+Důkaz pak probíhá ve třech krocích:
+\begin{enumerate}
+    \item \emph{Redukce alternativ:} Ukážeme, že existence funkce pro $m$ alternativ implikuje existenci funkce pro $m-1$.
+    \item \emph{Redukce voličů:} Ukážeme, že existence funkce pro $n$ voličů implikuje existenci funkce pro $n-1$.
+    \item \emph{Bázový krok:} Pro minimální instanci ($n=2, m=3$) ověříme pomocí SAT solveru, že žádná taková funkce neexistuje.
+\end{enumerate}
+Pokud bázový krok selže (funkce neexistuje), pak díky implikacím z~prvních dvou kroků nutně neexistuje řešení pro žádné konečné $n$ a~$m$.
+
+\subsection{Redukce počtu alternativ}
+
+Předpokládejme, že existuje funkce $F_m$ pro množinu alternativ $A$ o~velikosti $m > 3$.
+Naším cílem je definovat funkci $F_{m-1}$ na množině $A' = A \setminus \{x\}$, kde $x$ je libovolně zvolená alternativa, kterou z~modelu odstraníme.
+
+Funkci $F_{m-1}$ zkonstruujeme pomocí vnoření profilů z~$A'$ do $A$.
+Pro libovolný profil $\rho$ definovaný na menší množině $A'$ vytvoříme rozšířený profil $\rho^{+x}$ na množině $A$ tak, že alternativu $x$ umístíme na poslední místo v~preferencích všech voličů.
+Formálně, pro každého voliče $i$ a~každou alternativu $y \in A'$ v~profilu $\rho^{+x}$ platí $y \succ_i x$.
+
+Samotnou funkci $F_{m-1}$ pak definujeme předpisem:
+\[
+    F_{m-1}(\rho) = F_m(\rho^{+x})|_{A'},
+\]
+kde $|_{A'}$ značí zúžení preferenčního uspořádání společnosti na množinu $A'$.
+Funkce $F_m$ nejprve určí společenskou preferenci na celé množině $A$, přičemž alternativa $x$ je v~individuálních preferencích zafixována jako striktně nejhorší.
+Z~axiomu Pareto efektivity vyplývá, že $x$ se musí umístit na posledním místě i~ve výsledném společenském uspořádání.
+Důsledkem axiomu IIA pak je, že relativní společenské pořadí alternativ uvnitř $A'$ závisí výhradně na jejich vzájemném individuálním pořadí.
+Protože fixní pozice $x$ na dně žebříčků nijak nemění preference mezi ostatními prvky, dědí $F_{m-1}$ vlastnosti IIA a~nediktátorství přímo od původní funkce $F_m$.
+Tímto způsobem jsme prokázali, že existence funkce splňující Arrowovy axiomy pro $m$ alternativ implikuje její existenci i~pro $m-1$ alternativ.
+Tuto redukci lze aplikovat opakovaně až do dosažení bázového případu pro tři alternativy.
+\subsection{Redukce počtu voličů}
+
+Druhý indukční krok je snižování počtu voličů.
+Předpokládejme existenci validní funkce $F_n$ pro množinu voličů o~velikosti $n > 2$.
+Naším cílem je zkonstruovat funkci $F_{n-1}$ pro $n-1$ voličů, která si zachová vlastnosti původní funkce.
+
+Konstrukci provedeme metodou \uv{sloučení voličů}, což budeme modelovat vynucenou shodou preferencí $n$-tého voliče s~voličem prvním.
+Formálně definujeme funkci $F_{n-1}$ pro profil $\rho = (R_1, \dots, R_{n-1})$ předpisem:
+\[
+    F_{n-1}(R_1, \dots, R_{n-1}) = F_n(R_1, \dots, R_{n-1}, R_1)\,.
+\]
+Tímto jsme omezili doménu původní funkce $F_n$ na podmnožinu profilů, kde platí podmínka shody $R_1 = R_n$.
+Nyní ověříme, že se vlastnosti $F_n$ přenášejí i~na novou funkci $F_{n-1}$.
+
+\subsubsection*{Paretovská efektivita a~IIA}
+Nechť $\rho = (R_1, \dots, R_{n-1})$ je libovolný profil, ve kterém všichni voliči upřednostňují $a$ před $b$, tedy určitě platí $a \succ_1 b$.
+Výsledek funkce $F_{n-1}$ je naprosto shodný s~výsledkem funkce $F_n$, kde argumentem je profil $(R_1, \dots, R_{n-1}, R_1)$, tedy nutně platí $a \succ_n b$, tudíž stále platí, že $a$ je jednomyslně preferováno před $b$.
+Původní funkce $F_n$ je Paretovská, proto určitě platí $a \succ b$, čímž je podmínka splněna i~pro $F_{n-1}$.
+
+Podobně uvažujme dva profily $\rho$ a~$\sigma$, které se shodují v~preferencích na dvojici $\{a, b\}$.
+Jelikož se preference $R_1$ shodují v~obou profilech, musí se shodovat i~$R_n$ v~obou profilech.
+Všechny vstupy do funkce $F_n$ jsou tedy z~hlediska dvojice $\{a, b\}$ identické v~obou případech.
+Díky vlastnosti IIA funkce $F_n$ je výsledná společenská preference stejná.
+Tím pádem musí platit, že $F_{n-1}$ rozhoduje nezávisle na ostatních alternativách.
+
+\subsubsection*{Nediktátorství}
+
+Zbývá ověřit, že redukcí počtu voličů nevznikne diktátor.
+Důkaz provedeme sporem.
+Předpokládejme, že funkce $F_{n-1}$ má diktátora $d \in \{1,\dots,n-1\}$.
+Ukážeme, že za tohoto předpokladu musí být diktátorská i funkce $F_n$.
+
+Nechť
+\[
+    \rho = (R_1,\dots,R_n) \in \mathcal{R}^n
+\]
+je libovolný profil preferencí a~nechť volič $d$ v~tomto profilu striktně preferuje $a \succ_d b$.
+Aby byl $d$ diktátorem funkce $F_n$, musí prosadit $a \succ b$ v~každém takovém profilu $\rho$.
+Rozlišíme proto dva případy podle vztahu preferencí voličů $1$ a~$n$ na dvojici $\{a,b\}$, ostatní preference jsou pro oba voliče totožné.
+
+Pokud se voliči 1 a $n$ shodují v~preferenci na dvojici $\{a, b\}$, tedy $R_1|_{\{a,b\}} = R_n|_{\{a,b\}}$, nachází se profil $\rho$ v~doméně funkce $F_{n-1} = F_n(R_1,\dots,R_{n-1},R_1)$.
+Z~předpokladu, že volič $d$ je diktátorem funkce $F_{n-1}$, proto přímo plyne společenské rozhodnutí $a \succ b$ ve funkci $F_n$.
+
+Zbývá tedy uvažovat případ, kdy se voliči 1 a~$n$ na preferenci $\{a, b\}$ neshodují, tedy $R_1|_{\{a,b\}} \ne R_n|_{\{a,b\}}$.
+V~tomto případě zkonstruujeme pomocný profil
+\[
+    \rho' = (R_1,\dots,R_{n-1},R_n'),
+\]
+kde preference voliče $n$ upravíme pouze na dvojici $\{a,b\}$ tak, aby platilo $R_n'|_{\{a,b\}} = R_1|_{\{a,b\}}$ a~jeho preference vůči ostatním alternativám ponecháme beze změny.
+
+Z~definice redukce tedy platí
+\[
+    F_n(\rho') = F_{n-1}(R_1,\dots,R_{n-1}),
+\]
+a~v~profilu $\rho'$ rozhoduje výhradně volič $d$.
+Protože $d$ striktně preferuje $a \succ b$, platí $a \succ_{\rho'} b$.
+
+Nyní porovnáme profily $\rho$ a~$\rho'$.
+Tyto profily se shodují v~preferencích všech voličů kromě voliče $n$ a~navíc se shodují v~preferencích všech voličů na dvojici $\{a,b\}$ kromě právě voliče $n$.
+Preference voliče $d$ na této dvojici zůstala nezměněna.
+Díky axiomu IIA platí, že společenské rozhodnutí mezi $a$ a~$b$ musí být v~profilech $\rho$ a~$\rho'$ shodné.
+Z~$a \succ_{\rho'} b$ tedy plyne $a \succ_{\rho} b$.
+
+Ukázali jsme, že volič $d$ prosazuje svou striktní preferenci $a \succ b$ i~v~libovolném profilu $\rho$.
+Volič $d$ je tedy diktátorem funkce $F_n$, což je spor s~předpokladem nediktátorství.
+
+\section{Bázový krok a jeho převedení do logické formule}\label{sec:Encoding}
+
+Nyní se zaměříme na bázový krok ($n=2, |A|=3$). Naším úkolem je převést existenci funkce $F$ na problém splnitelnosti formule výrokové logiky\footnote{Konkrétně budeme konstruovat formuli v~CNF.}.
+Hledáme model, který by reprezentoval validní volební mechanismus.
+Pokud SAT solver vrátí \texttt{UNSAT}, znamená to, že taková funkce neexistuje.
+Transformace problému do logické formule je založena na článcích \cite{brandt2016finding} a~\cite{geist2011automated}.
+
+\subsection{Proměnné}
+
+Prostor všech možných vstupních profilů $\mathcal{R}^n$ je sice konečný, ale pro manuální dokazování poměrně nepraktický.
+V~tomto experimentu pracujeme se striktními preferencemi.
+Pro $|A|=3$ existuje $3! = 6$ možných preferencí pro jednoho voliče.
+Pro $n=2$ voliče tak máme celkem $6^2 = 36$ možných vstupních profilů.
+
+Zavedeme boolovské proměnné $w_{a, b, \rho}$, které reprezentují výstupní hodnotu funkce $F$:
+\[
+    w_{a, b, \rho} \equiv \text{Společnost preferuje } a \succ b \text{ v profilu } \rho.
+\]
+Kde $a, b \in A, a \neq b$ a~$\rho \in \mathcal{R}^n$.
+Označme $p_{i, a, b, \rho}$ jako pravdivostní hodnotu výroku \uv{volič $i$ v~profilu $\rho$ striktně preferuje $a$ před $b$}.
+Vstupní proměnné $p$ jsou konstanty dané konkrétním profilem $\rho$.
+
+\subsection{Omezení}
+
+Aby proměnné $w_{a, b, \rho}$ reprezentovaly platnou funkci společenského blahobytu, musíme vygenerovat klauzule v~CNF pro každou podmínku.
+
+\subsubsection{Vlastnosti společenského uspořádání}
+Výstupem funkce musí být lineární uspořádání. Pro každý profil $\rho \in \mathcal{R}^n$ a~všechny $a, b, c \in A$ generujeme:
+
+\begin{enumerate}
+    \item \emph{Úplnost}: Společnost musí mít názor buď $a \succ b$ nebo $b \succ a$.
+          \[
+              w_{a, b, \rho} \lor w_{b, a, \rho}
+          \]
+    \item \emph{Asymetrie}: Společnost nemůže preferovat $a \succ b$ a~současně $b \succ a$.
+          \[
+              \neg w_{a, b, \rho} \lor \neg w_{b, a, \rho}
+          \]
+    \item \emph{Tranzitivita}: Pokud $a$ je preferováno před $b$ a~$b$ preferováno před $v$, pak musí být $a$ preferováno před $c$.
+          \[
+              (\neg w_{a, b, \rho} \lor \neg w_{b, c, \rho} \lor w_{a, c, \rho})
+          \]
+          Tato klauzule odpovídá implikaci $(w_{a, b, \rho} \land w_{b, c, \rho}) \implies w_{a, c, \rho}$.
+\end{enumerate}
+
+\subsubsection{Slabá Pareto optimalita}
+Pokud v~profilu $\rho$ všichni voliči upřednostňují $a$ před $b$, musí tak činit i~společnost.
+Pokud platí $\forall i \colon p_{i, a, b, \rho}$ (což zjistíme už při generování), přidáme klauzuli:
+\[
+    w_{a, b, \rho}\,.
+\]
+
+\subsubsection{Nezávislost na irelevantních alternativách}
+Toto je výpočetně nejnáročnější podmínka, protože počet klauzulí roste kvadraticky s~počtem profilů.
+Procházíme všechny dvojice profilů $\rho, \rho' \in \mathcal{R}^n$ a~všechny dvojice alternativ $a, b \in A$.
+Pokud se preference všech voličů vůči dvojici $\{a, b\}$ v~profilech $\rho$ a~$\rho'$ shodují, musí se shodovat i~výstupní hodnota $w$.
+Definujme si pomocný predikát $\text{Match}(\rho, \rho', a, b)$.
+\[
+    \text{Match}(\rho, \rho', a, b) \equiv \bigwedge_{i \in Q} (p_{i, a, b, \rho} \leftrightarrow p_{i, a, b, \rho'})
+\]
+Pokud je $\text{Match}$ pravdivý, přidáme na výstup:
+\[
+    (w_{a, b, \rho} \lor \neg w_{a, b, \rho'}) \land (\neg w_{a, b, \rho} \lor w_{a, b, \rho'}),
+\]
+což odpovídá ekvivalenci
+\[
+    w_{a, b, \rho} \iff w_{a, b, \rho'}\,.
+\]
+
+\subsubsection{Nediktátorství}
+Chceme dokázat, že neexistuje diktátor. Pro každého voliče $i$ tedy musí existovat alespoň jeden případ, profil $\rho$ a~dvojice $a, b$, kdy se společenská preference liší od jeho preference.
+To zapíšeme jako jednu velkou disjunkci pro každého voliče $i$:
+\[
+    \bigvee_{\rho \in \mathcal{R}^n, a, b \in A} (p_{i, a, b, \rho} \land \neg w_{a, b, \rho})\,.
+\]
+
+\section{Experimenty}\label{sec:Experiments}
+
+
+Pro ověření bázového kroku induktivního důkazu byl implementován skript v~jazyce Python, jehož úkolem je automaticky generovat odpovídající instanci CNF formule.
+Ta je následně řešena pomocí SAT solveru \textsc{Minisat}.
+Skript pro zadaný počet voličů a~alternativ nejprve vygeneruje všechny možné profily striktních preferencí.
+Na základě těchto profilů jsou poté postupně konstruovány klauzule odpovídající vlastnostem relace slabé preference a~jednotlivým axiomům Arrowova teorému.
+
+Hlavním cílem experimentální části je praktická verifikace Arrowova teorému pro bázový případ $N=2$, $M=3$.
+Nicméně skript byl implementován tak, aby se jednotlivé axiomy mohly odebírat, čímž vzniklo zajímavé okno pro zkoumání velikosti a~jiných vlastností výsledné formule, k~čemuž se stručně vyjádříme na konci této sekce.
+
+Pro každou instanci danou počtem voličů $N$ a~alternativ $M$ jsou generovány axiomy Pareto optimality, nezávislosti na irelevantních alternativách a~nediktátorství.
+Solver následně rozhodne, zda existuje model reprezentující funkci společenského blahobytu splňující danou množinu axiomů.
+
+Experimenty byly prováděny ve dvou základních režimech:
+\begin{enumerate}
+    \item \emph{Plná formulace teorému}, ve které jsou zahrnuty všechny axiomy Arrowova teorému.
+    \item \emph{Relaxovaná formulace}, ve které je vždy vynechán právě jeden axiom a je testováno, zda se formule stane splnitelnou.
+\end{enumerate}
+
+Základní experiment odpovídá instanci s~$N=2$ voliči a~$M=3$ alternativami.
+Tento případ, spolu s~induktivním krokem, postačuje k~důkazu Arrowova teorému v~obecnosti (\uv{up to bugs in the solver} -- a~v~našem případě i~v~generátoru formule -- nicméně pro všechny testované instance byl výsledek očekávaný).
+Výsledky pro větší hodnoty $N$ a~$M$ jsou proto chápány především jako ilustrativní a~slouží k~posouzení výpočetní náročnosti celé metody.
+
+\subsection{Výsledky experimentů}
+
+Výsledky experimentů pro bázový případ $N=2$, $M=3$ jsou shrnuty v~tabulce~\ref{tab:basic-results}.
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lrrrrl}
+        \toprule
+        Chybějící axiom & Profily & Klauzule & Generace [s] & Řešení [s] & Výsledek \\
+        \midrule
+        žádný           & 36      & 2432     & 0.0015       & 0.0001     & UNSAT    \\
+        Pareto          & 36      & 2378     & 0.0013       & 0.0000     & SAT      \\
+        IIA             & 36      & 704      & 0.0006       & 0.0000     & SAT      \\
+        Nedikt.         & 36      & 2430     & 0.0012       & 0.0001     & SAT      \\
+        \bottomrule
+    \end{tabular}
+    \caption{Výsledky pro $N=2$, $M=3$. }
+    \label{tab:basic-results}
+\end{table}
+
+V~případě plné formulace teorému solver vrací \texttt{UNSAT}, což znamená, že neexistuje žádná funkce společenského blahobytu splňující všechny axiomy současně.
+Tento výsledek odpovídá tvrzení Arrowova teorému.
+
+Po odebrání jednotlivých axiomů se formule stává splnitelnou.
+V~případě vynechání podmínky nediktátorství nalezený model odpovídá diktátorskému mechanismu, kdy společenská preference kopíruje preference jednoho z~voličů.
+To potvrzuje, že diktatura je jediným mechanismem splňujícím zbývající axiomy.
+
+Při odebrání podmínky nezávislosti na irelevantních alternativách by solver teoreticky měl nalézt model odpovídající systému \emph{Borda count} -- nezkoumáno podrobně.
+Dále při odstranění této podmínky dochází k~výraznému snížení počtu klauzulí, což naznačuje, že právě IIA představuje výpočetně nejnáročnější část.
+
+
+\subsection{Škálování a výpočetní náročnost}
+
+Ačkoliv je pro samotný důkaz Arrowova teorému postačující bázový případ $N=2$, $M=3$, implementovaný skript umožňuje generovat a~řešit i~větší instance.
+Vybrané výsledky pro různé kombinace počtu voličů a~alternativ jsou uvedeny v~tabulce~\ref{tab:scaling-results}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{rrrrrrl}
+        \toprule
+        $N$ & $M$ & Profily & Klauzule     & Generace [s] & Řešení [s] & Výsledek \\
+        \midrule
+        3   & 3   & 216     & 37\,749      & 0.017        & 0.0004     & UNSAT    \\
+        4   & 3   & 1296    & 645\,898     & 0.276        & 0.0075     & UNSAT    \\
+        5   & 3   & 7776    & 11\,432\,183 & 4.720        & 0.125      & UNSAT    \\
+        2   & 4   & 576     & 1\,024\,706  & 0.431        & 0.0058     & UNSAT    \\
+        \bottomrule
+    \end{tabular}
+    \caption{Vybrané experimenty pro větší instance.}
+    \label{tab:scaling-results}
+\end{table}
+
+Z~výsledků je patrné, že počet klauzulí roste velmi rychle, zejména s~rostoucím počtem alternativ.
+Navzdory tomu zůstává doba samotného řešení SAT solverem relativně nízká.
+Dominantní část výpočetního času připadá na konstrukci CNF formule, nikoliv na její řešení.
+Nutno dodat, že skript byl během experimentování několikrát optimalizován a~jeho finální podoba je zhruba $80\times$ rychlejší než původní verze.
+
+Experimentální výsledky tak potvrzují nejen platnost Arrowova teorému v~bázovém případě, ale také demonstrují praktickou použitelnost SAT solverů pro verifikaci podobných nemožnostních tvrzení v~teorii společenské volby.
+
+
+\section{Závěr}\label{sec:Conclusion}
+
+V~rámci projektu jsme ukázali, že Arrowův teorém lze prakticky ověřit kombinací induktivního argumentu a~automatického řešení bázového kroku pomocí SAT solveru.
+Induktivní redukce umožňuje zmenšit problém na instanci, kterou lze mechanicky převést do CNF formule a~tu následně ověřit.
+
+Experimenty potvrdily, že pro bázový případ se dvěma voliči a~třemi alternativami je výsledná formule nesplnitelná, což odpovídá tvrzení Arrowova teorému.
+Zároveň se ukázalo, že ačkoliv velikost formule roste velmi rychle s~počtem voličů a~alternativ, samotné řešení SAT solverem zůstává poměrně efektivní.
+Hlavním úzkým místem je generování formule, nikoliv její řešení.
+
+Použitý přístup představuje elegantní způsob, jak induktivně dokazovat teorémy, jejichž bázové kroky jsou příliš rozsáhlé pro manuální práci.
+Zároveň však vyvstává otázka, do jaké míry lze takové důkazy považovat za korektní.
+V~praxi se tento typ důkazu v~odborné literatuře běžně používá, zejména u~tvrzení jako Arrowův teorém.
+
+Striktně vzato však nelze s~absolutní jistotou tvrdit, že celý řetězec nástrojů -- od generátoru formule přes SAT solver až po samotné běhové prostředí -- je zcela bezchybný.
+Pokud tuto předpokládanou korektnost přijmeme, lze metodu považovat za důkaz.
+V~opačném případě se musíme spokojit s~tvrzením, že výsledek je \uv{dost pravděpodobně správný}.
+
+\pagebreak
+
+\nocite{*}
+\printbibliography
+
+\end{document}

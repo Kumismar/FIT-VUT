@@ -1,0 +1,3 @@
+{"rule":"PUNCTUATION_PARAGRAPH_END","sentence":"^\\QOndřej Koumar \\E(?:Dummy|Ina|Jimmy-|Dummy-|Maniquí-|Maniquíes-|Dummy\\+|Dummy's\\+)[0-9]+$"}
+{"rule":"QB_NEW_EN_OTHER","sentence":"^\\QPreliminaries.\\E$"}
+{"rule":"QB_NEW_EN_OTHER","sentence":"^\\QIn Section \\E(?:Dummy|Ina|Jimmy-|Dummy-|Maniquí-|Maniquíes-|Dummy\\+|Dummy's\\+)[0-9]+\\Q we define the problem.\\E$"}
